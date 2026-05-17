@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Camera detail page (GET /cameras/{id})
+**Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/camera_detail.html`, `tests/test_web_cameras.py`
+
+- New GET handler renders `camera_detail.html`, which extends `base.html`, embeds `<img src="/cameras/{id}/live.mjpg">` for the live stream from Task 11, shows the record-mode toggle, and links back to `/` (web-pivot Task 12).
+- Tests assert the camera's name + live `<img src>` + toggle button are present for an existing camera, and that unknown IDs return 404.
+
+**Deployment:** Not deployed
+**Test Results:** 93/93 passed
+
+---
+
 ### Live MJPEG route GET /cameras/{id}/live.mjpg (TDD)
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/live.py`, `tests/test_web_live_route.py`
 

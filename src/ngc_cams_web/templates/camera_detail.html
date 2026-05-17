@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ camera.name }} — ngc-cams{% endblock %}
+{% block content %}
+<h2>{{ camera.name }}</h2>
+<p><code>{{ camera.rtsp_url }}</code></p>
+<img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view" style="max-width: 100%; border: 1px solid #ccc;">
+<p>Record mode: <strong>{{ camera.record_mode.value }}</strong></p>
+<form method="post" action="/cameras/{{ camera.id }}/record">
+    <button type="submit">Toggle record</button>
+</form>
+<p><a href="/">← Back to all cameras</a></p>
+{% endblock %}

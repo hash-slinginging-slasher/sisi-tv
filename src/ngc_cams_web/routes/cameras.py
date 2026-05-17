@@ -47,3 +47,12 @@ def toggle_record(request: Request, camera_id: int):
     if manager is not None:
         manager.apply_modes()
     return RedirectResponse("/", status_code=303)
+
+
+@router.get("/cameras/{camera_id}", response_class=HTMLResponse)
+def camera_detail(request: Request, camera_id: int):
+    stored = request.app.state.cameras.get(camera_id)
+    if stored is None:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    templates = request.app.state.templates
+    return templates.TemplateResponse(request, "camera_detail.html", {"camera": stored})

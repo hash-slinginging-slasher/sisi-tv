@@ -123,3 +123,21 @@ def test_post_record_toggles_video_only_back_to_off():
         client.post(f"/cameras/{stored.id}/record", follow_redirects=False)
     assert repo.get(stored.id).record_mode == RecordMode.OFF
     assert spy.apply_modes_calls == 1
+
+
+def test_get_camera_detail_renders_live_img_and_record_button():
+    app, repo = _build()
+    stored = repo.add(Camera(name="Door", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        response = client.get(f"/cameras/{stored.id}")
+    assert response.status_code == 200
+    assert "Door" in response.text
+    assert f'src="/cameras/{stored.id}/live.mjpg"' in response.text
+    assert "Toggle record" in response.text
+
+
+def test_get_camera_detail_returns_404_for_unknown_id():
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.get("/cameras/9999")
+    assert response.status_code == 404
