@@ -35,6 +35,25 @@ if errorlevel 1 goto :pip_failed
 if errorlevel 1 goto :pip_failed
 echo [ OK ] Python packages installed.
 
+REM --- 3b. Optional fullscreen viewer (pywebview) --------------------------
+REM pywebview pulls in pythonnet, which only has wheels for Python 3.7-3.13.
+REM On Python 3.14+ this build fails. The server doesn't need it, so we
+REM treat the failure as non-fatal and skip the kiosk shortcut.
+set VIEWER_INSTALLED=0
+echo.
+echo Installing optional fullscreen viewer (pywebview)...
+".venv\Scripts\python.exe" -m pip install -e ".[viewer]"
+if errorlevel 1 (
+    echo [WARN] Could not install the pywebview viewer extra.
+    echo        Most likely cause: pythonnet has no wheel for your Python
+    echo        version (it currently supports 3.7-3.13). The SISI-TV server
+    echo        will still install and run -- only the auto-fullscreen kiosk
+    echo        viewer is skipped. To enable it, install Python 3.13 and re-run.
+) else (
+    echo [ OK ] Viewer installed.
+    set VIEWER_INSTALLED=1
+)
+
 REM --- 4. ffmpeg ------------------------------------------------------------
 echo.
 where ffmpeg >nul 2>&1
@@ -94,15 +113,19 @@ if errorlevel 1 (
     echo [ OK ] Autostart configured: each login will git pull and launch SISI-TV.
 )
 
-REM --- 7. Auto-start the fullscreen viewer ---------------------------------
+REM --- 7. Auto-start the fullscreen viewer (only if pywebview installed) ---
 echo.
-echo Creating Startup-folder shortcut for the fullscreen viewer ...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-viewer-startup-shortcut.ps1"
-if errorlevel 1 (
-    echo [WARN] Could not create the viewer autostart shortcut. You can re-run
-    echo        scripts\create-viewer-startup-shortcut.ps1 manually later.
+if "%VIEWER_INSTALLED%"=="1" (
+    echo Creating Startup-folder shortcut for the fullscreen viewer ...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-viewer-startup-shortcut.ps1"
+    if errorlevel 1 (
+        echo [WARN] Could not create the viewer autostart shortcut. You can re-run
+        echo        scripts\create-viewer-startup-shortcut.ps1 manually later.
+    ) else (
+        echo [ OK ] Viewer autostart configured: each login opens /grid fullscreen.
+    )
 ) else (
-    echo [ OK ] Viewer autostart configured: each login opens /grid fullscreen.
+    echo [SKIP] Viewer extra not installed; not creating the kiosk shortcut.
 )
 goto :done
 

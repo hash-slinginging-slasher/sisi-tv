@@ -1,5 +1,17 @@
 ## 2026-05-18
 
+### Make pywebview viewer an optional extra
+**Files Changed:** `pyproject.toml`, `install.bat`
+
+- Moved `pywebview` out of main `dependencies` into a new `[viewer]` optional extra. Reason: `pythonnet` (transitive dep) only ships wheels for Python 3.7–3.13, so installing on a Python 3.14 box (e.g. the GMKtec kiosk) failed the whole `pip install -e .[dev]` step and blocked the server from installing.
+- `install.bat` now runs the viewer install as a separate step that is allowed to fail. A `VIEWER_INSTALLED` flag gates the kiosk Startup-shortcut creation, so on unsupported Python versions the server installs cleanly and the viewer is just skipped.
+- Server runs identically on any supported Python; viewer-only users who upgrade Python to 3.13 can re-run install.bat to add the kiosk back.
+
+**Deployment:** Not deployed
+**Test Results:** Not run.
+
+---
+
 ### Dedicated fullscreen kiosk viewer (`sisi-tv-viewer`)
 **Files Changed:** `pyproject.toml`, `src/ngc_cams_viewer/__init__.py`, `src/ngc_cams_viewer/__main__.py`, `scripts/create-viewer-startup-shortcut.ps1`, `install.bat`
 

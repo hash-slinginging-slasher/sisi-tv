@@ -14,10 +14,16 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "jinja2>=3.1",
     "python-multipart>=0.0.12",
-    "pywebview>=5.0",
 ]
 
 [project.optional-dependencies]
+# Kept optional because pywebview pulls in pythonnet, which only ships wheels
+# for Python 3.7–3.13. Installing on 3.14 forces a from-source build that
+# fails. The server doesn't need the viewer to run, so we install this extra
+# separately in install.bat and skip the kiosk shortcut if it fails.
+viewer = [
+    "pywebview>=5.0",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.5",
