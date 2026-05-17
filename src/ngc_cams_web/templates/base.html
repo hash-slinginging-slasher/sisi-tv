@@ -166,8 +166,13 @@
         .vhs-filter .tracking-line {
             display: block; position: absolute; width: 100%; height: 4px;
             background: rgba(255,255,255,0.1); filter: blur(1px); z-index: 21;
-            animation: feed-tracking 8s linear infinite;
-            animation-delay: calc(var(--feed-seed) * -0.83s);
+            /* Each tile gets a VERY different scan speed. Fib seeds 2/3/5/8/13
+               give durations of 4s / 6s / 10s / 16s / 26s -- so even if two
+               cameras happened to overlap on one frame, they're scanning at
+               wildly different rates and will never sync visually. Delay
+               picks an arbitrary starting phase too. */
+            animation: feed-tracking calc(var(--feed-seed) * 2s) linear infinite;
+            animation-delay: calc(var(--feed-seed) * -1.1s);
         }
         @keyframes feed-tracking {
             0% { transform: translateY(-100%); } 100% { transform: translateY(100%); }
@@ -186,7 +191,9 @@
             background-size: 100% 5px, 5px 100%;
         }
         .vhs-filter.variant-degraded .tracking-line {
-            animation-duration: 2.5s;
+            /* Degraded VHS: still spread by seed but faster overall -- 2..8s */
+            animation: feed-tracking calc(var(--feed-seed) * 0.9s) linear infinite;
+            animation-delay: calc(var(--feed-seed) * -0.7s);
             height: 8px;
             background: rgba(255,255,255,0.2);
         }
@@ -212,8 +219,9 @@
             display: block; position: absolute; right: 10px; bottom: 10px;
             width: 50px; height: 50px; border: 1px solid #00ff66;
             background: rgba(0,255,100,0.05); border-radius: 2px;
-            animation: mgs-scan 2s infinite;
-            animation-delay: calc(var(--feed-seed) * -0.27s);
+            /* Per-tile scan period: 1.2..6s with fib seeds 2..13 */
+            animation: mgs-scan calc(0.8s + var(--feed-seed) * 0.4s) infinite;
+            animation-delay: calc(var(--feed-seed) * -0.5s);
         }
         @keyframes mgs-scan { 0%,100% { opacity: 0.2; } 50% { opacity: 0.6; } }
         /* MGS degraded: enemy-sighted red pulse + connection-lost overlay */
