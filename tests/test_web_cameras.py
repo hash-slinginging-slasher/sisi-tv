@@ -76,3 +76,50 @@ def test_post_delete_unknown_id_returns_404():
     with TestClient(app) as client:
         response = client.post("/cameras/9999/delete", follow_redirects=False)
     assert response.status_code == 404
+
+
+class _RecordingManagerSpy:
+    def __init__(self):
+        self.apply_modes_calls = 0
+
+    def apply_modes(self):
+        self.apply_modes_calls += 1
+
+
+def _build_with_manager():
+    connection = sqlite3.connect(":memory:", check_same_thread=False)
+    connection.row_factory = sqlite3.Row
+    initialize(connection)
+    repo = CameraRepository(connection)
+    spy = _RecordingManagerSpy()
+    app = build_app(
+        cameras=repo,
+        discovery=None,
+        recording_manager=spy,
+        live_stream_manager=None,
+    )
+    return app, repo, spy
+
+
+def test_post_record_toggles_off_to_video_only():
+    app, repo, spy = _build_with_manager()
+    stored = repo.add(Camera(name="Cam", rtsp_url="rtsp://x/main"))
+    assert stored.record_mode == RecordMode.OFF
+
+    with TestClient(app) as client:
+        response = client.post(f"/cameras/{stored.id}/record", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert repo.get(stored.id).record_mode == RecordMode.VIDEO_ONLY
+    assert spy.apply_modes_calls == 1
+
+
+def test_post_record_toggles_video_only_back_to_off():
+    app, repo, spy = _build_with_manager()
+    stored = repo.add(
+        Camera(name="Cam", rtsp_url="rtsp://x/main", record_mode=RecordMode.VIDEO_ONLY)
+    )
+    with TestClient(app) as client:
+        client.post(f"/cameras/{stored.id}/record", follow_redirects=False)
+    assert repo.get(stored.id).record_mode == RecordMode.OFF
+    assert spy.apply_modes_calls == 1

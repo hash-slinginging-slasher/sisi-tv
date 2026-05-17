@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Toggle-record route (POST /cameras/{id}/record)
+**Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
+
+- New POST handler that flips `record_mode` between `OFF` and `VIDEO_ONLY` via `CameraRepository.update` (using `dataclasses.replace` so the other fields are preserved) and asks the recording manager to reconcile via `apply_modes()` (web-pivot Task 8).
+- Tests use a `_RecordingManagerSpy` to verify `apply_modes` is called exactly once per toggle and to assert the persisted mode flip in both directions.
+
+**Deployment:** Not deployed
+**Test Results:** 81/81 passed
+
+---
+
 ### Delete-camera route (POST /cameras/{id}/delete)
 **Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
 
