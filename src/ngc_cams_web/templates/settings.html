@@ -53,6 +53,7 @@
                                 {% if cam.ptz_enabled %}<span class="text-primary">YES</span>{% else %}<span class="text-on-surface-variant">NO</span>{% endif %}
                             </td>
                             <td class="p-3 text-right">
+                                <a href="/cameras/{{ cam.id }}/edit" class="inline-block px-2 py-1 bg-surface-container-high border border-outline-variant rounded text-[10px] font-mono text-on-surface hover:border-primary hover:text-primary transition-colors">EDIT</a>
                                 <form class="inline" method="post" action="/cameras/{{ cam.id }}/record">
                                     <button class="px-2 py-1 bg-surface-container-high border border-outline-variant rounded text-[10px] font-mono text-on-surface hover:border-primary hover:text-primary transition-colors">REC</button>
                                 </form>

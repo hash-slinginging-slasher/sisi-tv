@@ -132,6 +132,60 @@ def toggle_record(request: Request, camera_id: int):
     return RedirectResponse("/", status_code=303)
 
 
+@router.get("/cameras/{camera_id}/edit", response_class=HTMLResponse)
+def edit_camera_form(request: Request, camera_id: int):
+    stored = request.app.state.cameras.get(camera_id)
+    if stored is None:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request,
+        "camera_edit.html",
+        {
+            "active_nav": "settings",
+            "camera": stored,
+            "modes": list(RecordMode),
+        },
+    )
+
+
+@router.post("/cameras/{camera_id}/edit")
+def edit_camera(
+    request: Request,
+    camera_id: int,
+    name: str = Form(...),
+    rtsp_url: str = Form(...),
+    record_mode: str = Form(default=""),
+    ptz_enabled: str | None = Form(default=None),
+):
+    repo = request.app.state.cameras
+    stored = repo.get(camera_id)
+    if stored is None:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    try:
+        next_mode = RecordMode(record_mode) if record_mode else stored.record_mode
+    except ValueError:
+        next_mode = stored.record_mode
+    rtsp_changed = stored.rtsp_url != rtsp_url.strip()
+    updated = replace(
+        stored,
+        name=name.strip(),
+        rtsp_url=rtsp_url.strip(),
+        ptz_enabled=bool(ptz_enabled),
+        record_mode=next_mode,
+    )
+    repo.update(camera_id, updated)
+    manager = request.app.state.recording_manager
+    if manager is not None:
+        # If the camera was recording and the RTSP URL changed, ffmpeg
+        # is still tied to the old URL. Stop it explicitly so apply_modes
+        # can spawn a fresh ffmpeg against the new URL.
+        if rtsp_changed and manager.is_recording(camera_id):
+            manager.stop(camera_id)
+        manager.apply_modes()
+    return RedirectResponse("/settings", status_code=303)
+
+
 @router.get("/cameras/{camera_id}", response_class=HTMLResponse)
 def camera_detail(request: Request, camera_id: int):
     stored = request.app.state.cameras.get(camera_id)

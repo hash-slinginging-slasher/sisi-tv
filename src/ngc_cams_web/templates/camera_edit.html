@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ camera.name }} — SISI-TV{% endblock %}
+{% block heading %}Edit Camera{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+    <form method="post" action="/cameras/{{ camera.id }}/edit" class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-4">
+        <header class="flex items-center justify-between border-b border-outline-variant pb-3">
+            <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">edit</span>
+                CAM_{{ "%02d"|format(camera.id) }} / {{ camera.name }}
+            </h3>
+            <a href="/cameras/{{ camera.id }}" class="nav-label text-on-surface-variant hover:text-primary flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">videocam</span>
+                Live view
+            </a>
+        </header>
+
+        <label class="block">
+            <span class="nav-label text-on-surface-variant">Name</span>
+            <input name="name" required value="{{ camera.name }}"
+                   class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none">
+        </label>
+
+        <label class="block">
+            <span class="nav-label text-on-surface-variant">RTSP URL</span>
+            <input name="rtsp_url" required value="{{ camera.rtsp_url }}"
+                   class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none">
+            <span class="block mt-1 text-[10px] font-mono text-on-surface-variant">
+                Most cameras need a stream path (e.g. <code>rtsp://192.168.1.x/live/ch00_0</code>). A bare host won't return a stream.
+            </span>
+        </label>
+
+        <label class="block">
+            <span class="nav-label text-on-surface-variant">Record Mode</span>
+            <select name="record_mode"
+                    class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none">
+                {% for mode in modes %}
+                <option value="{{ mode.value }}" {% if mode == camera.record_mode %}selected{% endif %}>
+                    {{ mode.value|upper }}{% if mode.value == 'video_only' %} (video, no audio){% elif mode.value == 'video_audio' %} (video + audio){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="flex items-center gap-2 nav-label text-on-surface-variant">
+            <input type="checkbox" name="ptz_enabled" value="1" {% if camera.ptz_enabled %}checked{% endif %}
+                   class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">
+            PTZ Capable
+        </label>
+
+        <div class="flex gap-2 pt-2">
+            <button type="submit" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">Save</button>
+            <a href="/settings" class="px-5 py-2 border border-outline text-on-surface nav-label rounded-lg hover:bg-surface-container-highest transition-colors">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

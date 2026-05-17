@@ -114,9 +114,18 @@ def test_post_delete_unknown_id_returns_404():
 class _RecordingManagerSpy:
     def __init__(self):
         self.apply_modes_calls = 0
+        self.stop_calls: list[int] = []
+        self.recording_ids: set[int] = set()
 
     def apply_modes(self):
         self.apply_modes_calls += 1
+
+    def is_recording(self, camera_id: int) -> bool:
+        return camera_id in self.recording_ids
+
+    def stop(self, camera_id: int) -> None:
+        self.stop_calls.append(camera_id)
+        self.recording_ids.discard(camera_id)
 
 
 def _build_with_manager():
@@ -173,6 +182,149 @@ def test_get_camera_detail_returns_404_for_unknown_id():
     with TestClient(app) as client:
         response = client.get("/cameras/9999")
     assert response.status_code == 404
+
+
+def test_get_edit_form_renders_current_values():
+    app, repo = _build()
+    stored = repo.add(
+        Camera(
+            name="Old Name",
+            rtsp_url="rtsp://192.168.1.77",
+            ptz_enabled=True,
+            record_mode=RecordMode.VIDEO_ONLY,
+        )
+    )
+    with TestClient(app) as client:
+        response = client.get(f"/cameras/{stored.id}/edit")
+    assert response.status_code == 200
+    assert 'value="Old Name"' in response.text
+    assert 'value="rtsp://192.168.1.77"' in response.text
+    # checkbox is pre-checked for ptz, select has video_only selected
+    assert "checked" in response.text
+    assert 'value="video_only"' in response.text
+    assert "selected" in response.text
+
+
+def test_get_edit_form_returns_404_for_unknown_id():
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.get("/cameras/9999/edit")
+    assert response.status_code == 404
+
+
+def test_post_edit_persists_changes_and_redirects_to_settings():
+    app, repo, spy = _build_with_manager()
+    stored = repo.add(Camera(name="Cam 1", rtsp_url="rtsp://192.168.1.77"))
+    with TestClient(app) as client:
+        response = client.post(
+            f"/cameras/{stored.id}/edit",
+            data={
+                "name": "Front Door",
+                "rtsp_url": "rtsp://192.168.1.77/live/ch00_0",
+                "record_mode": "video_only",
+                "ptz_enabled": "1",
+            },
+            follow_redirects=False,
+        )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/settings"
+    updated = repo.get(stored.id)
+    assert updated.name == "Front Door"
+    assert updated.rtsp_url == "rtsp://192.168.1.77/live/ch00_0"
+    assert updated.record_mode == RecordMode.VIDEO_ONLY
+    assert updated.ptz_enabled is True
+    # apply_modes fires so the recording manager picks up new RTSP / mode.
+    assert spy.apply_modes_calls == 1
+
+
+def test_post_edit_unchecking_ptz_clears_it():
+    app, repo, _ = _build_with_manager()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/main", ptz_enabled=True)
+    )
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={"name": "x", "rtsp_url": "rtsp://x/main", "record_mode": "off"},
+            # ptz_enabled omitted from form => unchecked
+            follow_redirects=False,
+        )
+    assert repo.get(stored.id).ptz_enabled is False
+
+
+def test_post_edit_with_unknown_camera_returns_404():
+    app, _, _ = _build_with_manager()
+    with TestClient(app) as client:
+        response = client.post(
+            "/cameras/9999/edit",
+            data={"name": "x", "rtsp_url": "rtsp://x/main"},
+        )
+    assert response.status_code == 404
+
+
+def test_post_edit_stops_active_ffmpeg_when_rtsp_changes():
+    """Editing the RTSP of a currently-recording camera should force a stop
+    so apply_modes spawns a fresh ffmpeg against the new URL."""
+    app, repo, spy = _build_with_manager()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/bare", record_mode=RecordMode.VIDEO_ONLY)
+    )
+    # Pretend the manager is mid-recording on this camera.
+    spy.recording_ids.add(stored.id)
+
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={
+                "name": "x",
+                "rtsp_url": "rtsp://x/main",  # different
+                "record_mode": "video_only",
+            },
+            follow_redirects=False,
+        )
+
+    assert spy.stop_calls == [stored.id]
+    assert spy.apply_modes_calls == 1
+
+
+def test_post_edit_does_not_stop_when_rtsp_unchanged():
+    app, repo, spy = _build_with_manager()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/main", record_mode=RecordMode.VIDEO_ONLY)
+    )
+    spy.recording_ids.add(stored.id)
+
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={
+                "name": "Renamed",  # only name changed
+                "rtsp_url": "rtsp://x/main",
+                "record_mode": "video_only",
+            },
+            follow_redirects=False,
+        )
+
+    assert spy.stop_calls == []  # no stop because RTSP didn't change
+    assert spy.apply_modes_calls == 1
+
+
+def test_post_edit_invalid_record_mode_keeps_existing():
+    app, repo, _ = _build_with_manager()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/main", record_mode=RecordMode.VIDEO_AUDIO)
+    )
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={
+                "name": "x",
+                "rtsp_url": "rtsp://x/main",
+                "record_mode": "garbage_mode",
+            },
+            follow_redirects=False,
+        )
+    assert repo.get(stored.id).record_mode == RecordMode.VIDEO_AUDIO
 
 
 def test_grid_renders_live_img_for_every_camera_up_to_cap():
