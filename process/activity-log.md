@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### ngc-cams-web console entry: composes real deps + lifespan poll + opens browser
+**Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`
+
+- `build_app` now accepts an optional `lifespan_poll_seconds`; when both that and a non-`None` `recording_manager` are provided, an asyncio lifespan task calls `manager.poll()` every interval and `manager.stop_all()` on shutdown. Existing tests stay inert because they pass `recording_manager=None` or skip the new argument (web-pivot Task 13).
+- New `src/ngc_cams_web/__main__.py` wires real collaborators (sqlite via `ngc_cams.db.connect`, `CameraRepository`, `SegmentRepository`, `DiscoveryService`, `RecordingManager`), builds the app with `lifespan_poll_seconds=1.0`, opens the default browser on `http://127.0.0.1:8000/` from a daemon thread (0.6s delay so uvicorn has time to bind), and runs uvicorn. `ngc-cams-web` console script (registered in pyproject.toml since Task 1) now resolves to this `main`.
+
+**Deployment:** Not deployed
+**Test Results:** 93/93 passed
+
+---
+
 ### Camera detail page (GET /cameras/{id})
 **Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/camera_detail.html`, `tests/test_web_cameras.py`
 
