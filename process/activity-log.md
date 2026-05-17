@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Surface poller failures in the log
+**Files Changed:** `src/ngc_cams_web/composition.py`, `tests/test_web_composition.py`, `kanban-to.md`
+
+- Replaced the bare `except: pass` around `recording_manager.poll()` and `stop_all()` with `logger.exception(...)` so a raise inside either path lands in uvicorn's stderr with a full traceback. The `# noqa: BLE001` stays because surviving transient errors is still the explicit policy — we just stop hiding them.
+- Added `test_poller_logs_exception_and_keeps_running` which spins the lifespan with a fake recording manager that raises on its first `poll()` tick, asserts the log message includes the "recording poll tick failed" string with `exc_info` attached, and confirms the poller continues to tick (so transient failures don't kill recording) and `stop_all` still runs on shutdown.
+
+**Deployment:** Not deployed
+**Test Results:** 80/80 passed
+
+---
+
 ### Retention pruning in the lifespan
 **Files Changed:** `src/ngc_cams/recording/retention.py` (new), `src/ngc_cams/segments.py`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_recording_retention.py` (new), `tests/test_segments.py`, `kanban-to.md`
 

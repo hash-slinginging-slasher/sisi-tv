@@ -18,12 +18,6 @@ Retention pruning landed but the disk-guard half of the original card didn't: wh
 - **Touches:** `src/ngc_cams/cameras.py` and `src/ngc_cams/segments.py` — wrap multi-statement methods in a shared `threading.RLock` (one lock per `Connection`). Alternative: per-request connection from a pool, but that complicates the recording manager which holds a long-lived handle. Stick with the lock for round 1.
 - **Done when:** A regression test hammers `POST /cameras/{id}/record` from a threadpool while the poller runs concurrent `apply_modes`, with zero `database is locked` or stale-read failures over a 5 s loop.
 
-### Surface poller failures in the log
-`composition.py:28` and `:43` swallow every `Exception` from `recording_manager.poll()` and `stop_all()` with bare `pass`. If `apply_modes` starts raising in production (e.g. `find_ffmpeg_executable` returns None after an uninstall, or `_ingest_new_segments` hits a corrupt CSV), nothing will surface — the recording silently stops and the user has to notice via missing files. Replace `pass` with `logger.exception("recording poll tick failed")` so uvicorn's stderr captures the traceback. Same fix for `stop_all`.
-
-- **Touches:** `src/ngc_cams_web/composition.py` — add `import logging` and `logger = logging.getLogger(__name__)`; replace the two `pass` lines.
-- **Done when:** Inducing a deliberate raise in `poll()` (e.g. monkey-patching for one tick) shows a full traceback in the uvicorn console output; the poller still continues on the next tick.
-
 ### Out-of-process video player (deferred alternative)
 Could keep Qt but isolate libvlc in a separate child process for crash resilience — ODM uses this pattern (`odm.player.host.exe` separate from the main WPF app). Defer unless the web pivot stalls; web naturally provides the same isolation (browser is the "player host").
 
@@ -51,6 +45,7 @@ _empty_
 
 ## Done
 
+- **2026-05-17** — Surface poller failures in the log. Replaced the bare `pass` on `recording_manager.poll()` / `stop_all()` failures with `logger.exception("recording poll tick failed")` and `... stop_all failed` so uvicorn's stderr captures the traceback. Regression test wires a `_FlakyRecordingManager` that raises on tick 1, asserts the message is logged with `exc_info`, and that the poller keeps ticking. 80/80 tests, ruff clean.
 - **2026-05-17** — Retention pruning in the lifespan. `SegmentRepository.delete_older_than` + new `ngc_cams.recording.retention.prune_all` use each camera's `retention_days` to remove old `recording_segments` rows and unlink the matching `.mp4` files. Wired into the FastAPI lifespan on a 5-minute cadence next to the existing 1-s recording-manager poller. 79/79 tests, ruff clean.
 - **2026-05-17** — FastAPI + HTMX web UI pivot replacing Qt. `ngc-cams-web` console entry boots uvicorn on 127.0.0.1:8000 with cameras CRUD (add/delete/toggle-record/detail), MJPEG live view (`/cameras/{id}/live.mjpg`), HTMX-driven discovery, and a `RecordingManager.poll()` lifespan. Qt UI + PyQt6/python-vlc deps removed.
 - **2026-05-16** — Cameras CRUD + manual Discover (Phases A-E from `docs/plans/2026-05-16-ui-wireup.md`). 25/25 tests, ruff clean.

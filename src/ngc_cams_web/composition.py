@@ -43,7 +43,7 @@ def _build_lifespan(
                 try:
                     recording_manager.poll()
                 except Exception:  # noqa: BLE001 — poller must survive transient errors
-                    pass
+                    logger.exception("recording poll tick failed")
                 try:
                     await asyncio.wait_for(stop.wait(), timeout=poll_interval_seconds)
                 except asyncio.TimeoutError:
@@ -77,7 +77,7 @@ def _build_lifespan(
             try:
                 recording_manager.stop_all()
             except Exception:  # noqa: BLE001
-                pass
+                logger.exception("recording stop_all failed")
 
     return lifespan
 
