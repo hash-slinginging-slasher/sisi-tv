@@ -506,6 +506,37 @@ def test_post_grid_layout_rejects_out_of_range_columns(tmp_path, monkeypatch):
     assert response.status_code == 400
 
 
+def test_grid_default_columns_is_two_when_unsaved(tmp_path, monkeypatch):
+    """Fresh install (no settings.json) should render 2 columns -- this is
+    the most useful default for a camera wall vs the previous Auto."""
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "does-not-exist.json")
+    app, repo = _build()
+    repo.add(Camera(name="A", rtsp_url="rtsp://x/1"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    # `selected` next to the value=2 <option> proves the default landed.
+    assert 'value="2" selected' in response.text
+    # And the explicit grid-template-columns inline style is emitted.
+    assert "repeat(2, minmax(0, 1fr))" in response.text
+
+
+def test_grid_renders_fullscreen_toggle_button(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, repo = _build()
+    repo.add(Camera(name="A", rtsp_url="rtsp://x/1"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    assert 'id="fullscreen-toggle"' in response.text
+    # The chrome wrapper has the class so .grid-fullscreen CSS can hide it.
+    assert "grid-page-chrome" in response.text
+
+
 def test_post_grid_layout_persists_feed_filter(tmp_path, monkeypatch):
     from ngc_cams import settings_store
     monkeypatch.setattr(settings_store, "default_settings_path",

@@ -117,13 +117,17 @@ def grid(request: Request):
     stored = settings_store.load()
     raw_order = stored.get("grid_order") or []
     order = [int(x) for x in raw_order if isinstance(x, int) or str(x).isdigit()]
-    columns_raw = stored.get("grid_columns", "auto")
+    # Default 2 columns -- matches what most users actually want for a
+    # multi-camera wall. The user can pick Auto or 1/3/4/5/6 in the dropdown.
+    columns_raw = stored.get("grid_columns", 2)
     if isinstance(columns_raw, int) and 1 <= columns_raw <= 8:
         columns = columns_raw
     elif isinstance(columns_raw, str) and columns_raw.isdigit() and 1 <= int(columns_raw) <= 8:
         columns = int(columns_raw)
-    else:
+    elif columns_raw == "auto":
         columns = "auto"
+    else:
+        columns = 2
     feed_filter = _coerce_feed_filter(stored.get("feed_filter"))
     visible = _ordered_cameras(cameras, order)
     feed_seeds = {cam.id: feed_seed(cam.id) for cam in visible}

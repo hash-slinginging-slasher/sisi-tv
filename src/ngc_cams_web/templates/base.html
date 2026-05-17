@@ -271,6 +271,25 @@
             animation-delay: calc(var(--feed-seed) * -0.37s);
         }
         @keyframes mgs-enemy-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* === Live Matrix fullscreen mode === */
+        /* Toggled on <body> by the Fullscreen button in /grid. Strips sidebar,
+           top bar, and surrounding chrome so the feeds fill every pixel of
+           the viewport. The actual browser fullscreen (F11-style) is also
+           requested via the JS so the user's taskbar gets out of the way. */
+        body.grid-fullscreen aside,
+        body.grid-fullscreen header,
+        body.grid-fullscreen .grid-page-chrome { display: none !important; }
+        body.grid-fullscreen main { margin-left: 0 !important; }
+        body.grid-fullscreen main > div { padding: 0 !important; overflow: hidden !important; }
+        body.grid-fullscreen #grid-container {
+            height: 100vh !important;
+            gap: 0 !important;
+        }
+        body.grid-fullscreen #grid-container .grid-tile {
+            border-radius: 0 !important;
+            border: none !important;
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex">

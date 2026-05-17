@@ -3,7 +3,7 @@
 {% block heading %}Live Matrix{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+<div class="grid-page-chrome flex items-center justify-between mb-3 flex-wrap gap-2">
     <div class="flex items-center gap-3 flex-wrap">
         <span class="nav-label text-on-surface-variant">Layout:</span>
         <select id="columns-select" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 font-mono text-xs text-on-surface focus:border-primary focus:outline-none">
@@ -20,6 +20,12 @@
             <option value="vhs" {% if feed_filter == 'vhs' %}selected{% endif %}>VHS</option>
             <option value="mgs" {% if feed_filter == 'mgs' %}selected{% endif %}>Metal Gear Solid</option>
         </select>
+        <button type="button" id="fullscreen-toggle"
+                class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 font-mono text-xs text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-1"
+                title="Fullscreen (ESC to exit)">
+            <span class="material-symbols-outlined text-sm" id="fullscreen-icon">fullscreen</span>
+            <span>Fullscreen</span>
+        </button>
         <span id="layout-hint" class="nav-label text-on-surface-variant text-[10px]">Drag tiles to reorder. Filter applies to every feed.</span>
     </div>
     <span class="nav-label text-on-surface-variant">{{ visible|length }} feed{{ 's' if visible|length != 1 }}</span>
@@ -121,6 +127,39 @@
             }
         });
     }
+
+    // Fullscreen toggle — strips chrome + requests browser fullscreen so
+    // the camera wall fills every pixel. ESC or button click exits.
+    const fsButton = document.getElementById('fullscreen-toggle');
+    const fsIcon = document.getElementById('fullscreen-icon');
+    function setFullscreen(on) {
+        document.body.classList.toggle('grid-fullscreen', on);
+        if (fsIcon) fsIcon.textContent = on ? 'fullscreen_exit' : 'fullscreen';
+        if (on && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else if (!on && document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        }
+    }
+    if (fsButton) {
+        fsButton.addEventListener('click', () => {
+            const on = !document.body.classList.contains('grid-fullscreen');
+            setFullscreen(on);
+        });
+    }
+    // If the user hits F11 / ESC, keep the body class in sync with the
+    // browser-fullscreen state so the chrome reappears on exit.
+    document.addEventListener('fullscreenchange', () => {
+        const isFS = !!document.fullscreenElement;
+        if (!isFS && document.body.classList.contains('grid-fullscreen')) {
+            setFullscreen(false);
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.body.classList.contains('grid-fullscreen')) {
+            setFullscreen(false);
+        }
+    });
 
     // Atmosphere filter selector — applies the *-filter class to every tile
     // and persists so the choice survives reload (and applies on detail page).
