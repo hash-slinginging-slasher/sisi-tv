@@ -93,14 +93,43 @@ class SegmentRepository:
                 """,
                 (camera_id,),
             ).fetchall()
-        return [
-            StoredSegment(
-                id=row["id"],
-                camera_id=row["camera_id"],
-                path=Path(row["path"]),
-                started_at=datetime.fromisoformat(row["started_at"]),
-                duration_seconds=row["duration_seconds"],
-                has_audio=bool(row["has_audio"]),
+        return [self._row_to_segment(row) for row in rows]
+
+    def list_all(self) -> list[StoredSegment]:
+        """All segments across cameras, oldest first. Used by the storage-cap
+        enforcer that drops the oldest segments first."""
+        with self._lock:
+            rows = self._connection.execute(
+                """
+                SELECT id, camera_id, path, started_at, duration_seconds, has_audio
+                FROM recording_segments
+                ORDER BY started_at
+                """
+            ).fetchall()
+        return [self._row_to_segment(row) for row in rows]
+
+    def delete_by_id(self, segment_id: int) -> Path | None:
+        """Delete a single segment row. Returns the file path it referenced
+        (so the caller can unlink it), or ``None`` if no row matched."""
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT path FROM recording_segments WHERE id = ?", (segment_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            self._connection.execute(
+                "DELETE FROM recording_segments WHERE id = ?", (segment_id,)
             )
-            for row in rows
-        ]
+            self._connection.commit()
+        return Path(row["path"])
+
+    @staticmethod
+    def _row_to_segment(row: sqlite3.Row) -> StoredSegment:
+        return StoredSegment(
+            id=row["id"],
+            camera_id=row["camera_id"],
+            path=Path(row["path"]),
+            started_at=datetime.fromisoformat(row["started_at"]),
+            duration_seconds=row["duration_seconds"],
+            has_audio=bool(row["has_audio"]),
+        )

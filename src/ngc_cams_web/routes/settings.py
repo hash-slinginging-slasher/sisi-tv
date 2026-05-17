@@ -14,6 +14,8 @@ _FIELD_LABELS: dict[str, str] = {
     "recording_root": "Recording root (folder for .mp4 segments)",
     "snapshot_root": "Snapshot root (folder for .jpg snapshots)",
     "segment_seconds": "Segment length (seconds)",
+    "default_retention_days": "Recording retention (days) — older segments are pruned",
+    "storage_limit_gb": "Storage cap (GB) — oldest segments deleted past this size",
     "disk_guard_free_gb": "Pause recording when free disk drops below (GB)",
     "bind_host": "Bind host (127.0.0.1 = local only, 0.0.0.0 = LAN-wide)",
     "bind_port": "Bind port",
@@ -61,7 +63,13 @@ def settings_page(request: Request, saved: int = 0):
 async def save_settings(request: Request):
     form = await request.form()
     data: dict[str, Any] = {}
-    int_fields = {"segment_seconds", "disk_guard_free_gb", "bind_port"}
+    int_fields = {
+        "segment_seconds",
+        "default_retention_days",
+        "storage_limit_gb",
+        "disk_guard_free_gb",
+        "bind_port",
+    }
     for name in EDITABLE_FIELD_NAMES:
         raw = form.get(name)
         if raw is None:

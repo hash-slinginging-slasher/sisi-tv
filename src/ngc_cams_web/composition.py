@@ -15,7 +15,7 @@ from ngc_cams.config import AppConfig
 from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams.onvif.ptz import PTZService
 from ngc_cams.onvif.streams import get_stream_uris
-from ngc_cams.recording.retention import prune_all
+from ngc_cams.recording.retention import enforce_storage_cap, prune_all
 from ngc_cams.segments import SegmentRepository
 from ngc_cams_web.routes import cameras as cameras_routes
 from ngc_cams_web.routes import discovery as discovery_routes
@@ -42,6 +42,7 @@ def _build_lifespan(
     cameras: CameraRepository | None,
     segments: SegmentRepository | None,
     retention_interval_seconds: float | None,
+    config: AppConfig | None = None,
 ):
     retention_enabled = (
         cameras is not None
@@ -67,10 +68,31 @@ def _build_lifespan(
         async def retention():
             while not stop.is_set():
                 try:
-                    deleted = prune_all(cameras, segments, now=datetime.now())
-                    total = sum(len(v) for v in deleted.values())
+                    override = config.default_retention_days if config else None
+                    limit_bytes = (
+                        config.storage_limit_gb * 1_000_000_000
+                        if config and config.storage_limit_gb > 0
+                        else 0
+                    )
+                    deleted_by_age = prune_all(
+                        cameras,
+                        segments,
+                        now=datetime.now(),
+                        retention_days_override=override,
+                    )
+                    deleted_by_cap = enforce_storage_cap(
+                        segments, storage_limit_bytes=limit_bytes
+                    )
+                    total = sum(len(v) for v in deleted_by_age.values()) + len(
+                        deleted_by_cap
+                    )
                     if total:
-                        logger.info("retention pruned %s segment(s)", total)
+                        logger.info(
+                            "retention pruned %s segment(s) (age=%s, cap=%s)",
+                            total,
+                            sum(len(v) for v in deleted_by_age.values()),
+                            len(deleted_by_cap),
+                        )
                 except Exception:  # noqa: BLE001
                     logger.exception("retention pass failed")
                 try:
@@ -114,6 +136,7 @@ def build_app(
             cameras if segments is not None else None,
             segments,
             retention_interval_seconds,
+            config,
         )
         if recording_manager is not None and lifespan_poll_seconds is not None
         else None

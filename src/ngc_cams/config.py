@@ -14,6 +14,8 @@ _EDITABLE_FIELDS: tuple[tuple[str, Any], ...] = (
     ("recording_root", lambda v: Path(v)),
     ("snapshot_root", lambda v: Path(v)),
     ("segment_seconds", lambda v: int(v)),
+    ("default_retention_days", lambda v: int(v)),
+    ("storage_limit_gb", lambda v: int(v)),
     ("disk_guard_free_gb", lambda v: int(v)),
     ("bind_host", lambda v: str(v).strip()),
     ("bind_port", lambda v: int(v)),
@@ -31,6 +33,8 @@ class AppConfig:
     snapshot_root: Path = _DEFAULT_STORAGE_ROOT / "snapshots"
     segment_seconds: int = 600
     retention_days: int = 7
+    default_retention_days: int = 7
+    storage_limit_gb: int = 20
     disk_guard_free_gb: int = 10
     db_path: Path = field(
         default_factory=lambda: _DEFAULT_STORAGE_ROOT / "ngc-cams.sqlite3"
