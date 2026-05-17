@@ -55,6 +55,15 @@ def _build_lifespan(
     async def lifespan(app):
         stop = asyncio.Event()
 
+        # Reconcile recordings to whatever the DB says on boot. Without this
+        # a camera with record_mode != off sits idle until the user clicks
+        # the toggle (poller only restarts existing ffmpegs; it never starts
+        # the first one).
+        try:
+            recording_manager.apply_modes()
+        except Exception:  # noqa: BLE001
+            logger.exception("initial apply_modes failed")
+
         async def poller():
             while not stop.is_set():
                 try:

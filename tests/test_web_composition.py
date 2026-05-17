@@ -57,6 +57,43 @@ class _FlakyRecordingManager:
         self.stop_all_calls += 1
 
 
+def test_lifespan_calls_apply_modes_on_boot():
+    """A camera with record_mode != off must start recording at app boot,
+    not only after the user clicks the toggle. The lifespan calls
+    apply_modes() once before the poller takes over."""
+    connection = sqlite3.connect(":memory:")
+    connection.row_factory = sqlite3.Row
+    initialize(connection)
+    repository = CameraRepository(connection)
+
+    class _Spy:
+        def __init__(self):
+            self.apply_modes_calls = 0
+            self.poll_calls = 0
+            self.stop_all_calls = 0
+        def apply_modes(self):
+            self.apply_modes_calls += 1
+        def poll(self):
+            self.poll_calls += 1
+        def stop_all(self):
+            self.stop_all_calls += 1
+
+    spy = _Spy()
+    app = build_app(
+        cameras=repository,
+        discovery=None,
+        recording_manager=spy,
+        lifespan_poll_seconds=0.05,
+    )
+    with TestClient(app):
+        # Entering the context manager runs the lifespan setup.
+        pass
+    # apply_modes must fire exactly once on boot, regardless of how many
+    # poll ticks happened in the brief window the client was open.
+    assert spy.apply_modes_calls == 1
+    assert spy.stop_all_calls == 1  # shutdown still calls stop_all
+
+
 def test_poller_logs_exception_and_keeps_running(caplog):
     connection = sqlite3.connect(":memory:")
     connection.row_factory = sqlite3.Row
