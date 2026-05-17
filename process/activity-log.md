@@ -1,4 +1,17 @@
-## 2026-05-16
+## 2026-05-18
+
+### Dedicated fullscreen kiosk viewer (`sisi-tv-viewer`)
+**Files Changed:** `pyproject.toml`, `src/ngc_cams_viewer/__init__.py`, `src/ngc_cams_viewer/__main__.py`, `scripts/create-viewer-startup-shortcut.ps1`, `install.bat`
+
+- New `ngc_cams_viewer` package wraps pywebview (Edge WebView2 on Windows) to open `/grid` in a frameless fullscreen window. Polls the server URL on startup so it survives a cold-boot race with the SISI-TV server shortcut.
+- Exposed as a `gui-scripts` entry point (`sisi-tv-viewer`) so the resulting `.exe` is a no-console Windows GUI launcher — no console flash at login.
+- Added `scripts/create-viewer-startup-shortcut.ps1` (drops `SISI-TV Viewer.lnk` into `shell:startup` pointing at `.venv\Scripts\sisi-tv-viewer.exe`), and wired `install.bat` to call it right after the existing server startup-shortcut step.
+- Defaults the target URL to `http://<bind_host>:<bind_port>/grid` from `AppConfig` (remapping `0.0.0.0`/`::` to `127.0.0.1`); accepts a positional URL arg, `--no-wait`, `--windowed`, `--timeout`.
+
+**Deployment:** Not deployed
+**Test Results:** Manual smoke-test of `_default_url()` and `wait_for_server()` passed; `ruff check` clean. Full suite still hits the pre-existing `Temp\pytest-of-jodel` sandbox PermissionError (101 errors on clean `main` too) — 81/81 tmp-free tests pass.
+
+---
 
 ### Add db_path to AppConfig + extract UI plain helpers
 **Files Changed:** `src/ngc_cams/config.py`, `src/ngc_cams/ui/camera_form.py`, `src/ngc_cams/ui/discovery_runner.py`, `tests/test_config.py`, `tests/test_camera_form.py`, `tests/test_discovery_runner.py`

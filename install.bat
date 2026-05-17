@@ -93,6 +93,17 @@ if errorlevel 1 (
 ) else (
     echo [ OK ] Autostart configured: each login will git pull and launch SISI-TV.
 )
+
+REM --- 7. Auto-start the fullscreen viewer ---------------------------------
+echo.
+echo Creating Startup-folder shortcut for the fullscreen viewer ...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-viewer-startup-shortcut.ps1"
+if errorlevel 1 (
+    echo [WARN] Could not create the viewer autostart shortcut. You can re-run
+    echo        scripts\create-viewer-startup-shortcut.ps1 manually later.
+) else (
+    echo [ OK ] Viewer autostart configured: each login opens /grid fullscreen.
+)
 goto :done
 
 :done
@@ -101,9 +112,10 @@ echo ============================================
 echo   Install complete.
 echo ============================================
 echo.
-echo Auto-start: SISI-TV.lnk is in your Startup folder, so the next
-echo login will git pull + launch automatically. To disable, delete
-echo it from shell:startup (paste in Win+R).
+echo Auto-start: SISI-TV.lnk and SISI-TV Viewer.lnk are in your Startup
+echo folder, so the next login will git pull + launch the server and
+echo open the /grid page fullscreen. To disable either, delete the
+echo shortcut from shell:startup (paste in Win+R).
 echo.
 echo Launching SISI-TV in a new window ...
 start "SISI-TV" "%~dp0.venv\Scripts\sisi-tv.exe"

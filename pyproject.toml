@@ -14,6 +14,7 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "jinja2>=3.1",
     "python-multipart>=0.0.12",
+    "pywebview>=5.0",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +26,11 @@ dev = [
 
 [project.scripts]
 sisi-tv = "ngc_cams_web.__main__:main"
+
+[project.gui-scripts]
+# gui-scripts produces a no-console Windows .exe so the viewer doesn't flash a
+# console window at login when launched from the Startup folder shortcut.
+sisi-tv-viewer = "ngc_cams_viewer.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
