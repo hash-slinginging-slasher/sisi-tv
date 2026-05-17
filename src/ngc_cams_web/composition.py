@@ -23,6 +23,7 @@ from ngc_cams_web.routes import events as events_routes
 from ngc_cams_web.routes import live as live_routes
 from ngc_cams_web.routes import ptz as ptz_routes
 from ngc_cams_web.routes import settings as settings_routes
+from ngc_cams_web.routes import snapshots as snapshots_routes
 
 logger = logging.getLogger(__name__)
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -162,4 +163,5 @@ def build_app(
     app.include_router(live_routes.router)
     app.include_router(ptz_routes.router)
     app.include_router(settings_routes.router)
+    app.include_router(snapshots_routes.router)
     return app

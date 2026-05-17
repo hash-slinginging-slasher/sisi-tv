@@ -8,11 +8,13 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ngc_cams.models import Camera, RecordMode
+from ngc_cams.recording.paths import safe_camera_dir_name
 
 router = APIRouter()
 
 GRID_MAX_CELLS = 8
 DASHBOARD_FEED_LIMIT = 3
+SNAPSHOT_GALLERY_LIMIT = 12
 
 
 def _free_storage_str(path) -> str:
@@ -135,5 +137,22 @@ def camera_detail(request: Request, camera_id: int):
     stored = request.app.state.cameras.get(camera_id)
     if stored is None:
         raise HTTPException(status_code=404, detail="Camera not found")
+    config = request.app.state.config
+    cam_dir = config.snapshot_root / safe_camera_dir_name(stored.name)
+    snapshots: list[str] = []
+    if cam_dir.is_dir():
+        try:
+            files = sorted(
+                cam_dir.glob("*.jpg"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+        except OSError:
+            files = []
+        snapshots = [f.name for f in files[:SNAPSHOT_GALLERY_LIMIT]]
     templates = request.app.state.templates
-    return templates.TemplateResponse(request, "camera_detail.html", {"camera": stored})
+    return templates.TemplateResponse(
+        request,
+        "camera_detail.html",
+        {"camera": stored, "snapshots": snapshots},
+    )
