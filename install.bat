@@ -73,7 +73,7 @@ if not exist "C:\sisi-tv-storage"           mkdir "C:\sisi-tv-storage"          
 if not exist "C:\sisi-tv-storage\snapshots" mkdir "C:\sisi-tv-storage\snapshots" >nul 2>&1
 if errorlevel 1 goto :storage_failed
 echo [ OK ] Default storage dirs ready: C:\sisi-tv-storage
-goto :done
+goto :startup
 
 :storage_failed
 echo [WARN] Could not create C:\sisi-tv-storage automatically.
@@ -101,17 +101,18 @@ echo ============================================
 echo   Install complete.
 echo ============================================
 echo.
-echo Launch now with either:
-echo   .venv\Scripts\sisi-tv.exe
-echo   start.bat               ^(also runs git pull first^)
+echo Auto-start: SISI-TV.lnk is in your Startup folder, so the next
+echo login will git pull + launch automatically. To disable, delete
+echo it from shell:startup (paste in Win+R).
 echo.
-echo Auto-start: SISI-TV.lnk has been placed in your Startup folder,
-echo so the next login will git pull + launch automatically. To disable,
-echo delete the shortcut from:
-echo   shell:startup           ^(paste in Win+R^)
+echo Launching SISI-TV in a new window ...
+start "SISI-TV" "%~dp0.venv\Scripts\sisi-tv.exe"
 echo.
-echo The app opens http://127.0.0.1:8000/ in your default browser.
-echo Change bind_host / bind_port via the Settings page for LAN access.
+echo The app should open http://127.0.0.1:8000/ in your default browser.
+echo Change bind_host / bind_port via Settings for LAN access.
+echo.
+echo To relaunch later: start.bat   (also runs git pull first)
+echo                    .venv\Scripts\sisi-tv.exe   (skips git pull)
 echo.
 exit /b 0
 
