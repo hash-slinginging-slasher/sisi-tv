@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### LiveStreamManager helpers: build_mjpeg_command + iter_mjpeg_multipart (TDD)
+**Files Changed:** `src/ngc_cams_web/live.py`, `tests/test_web_live.py`
+
+- Added pure helpers for the upcoming MJPEG live-view route (web-pivot Task 10). `build_mjpeg_command(rtsp_url, ffmpeg)` produces the ffmpeg argv (`-rtsp_transport tcp -i URL -f mjpeg -q:v 5 -r 5 -an pipe:1`); `iter_mjpeg_multipart(stream, boundary, read_size)` is a generator that reads concatenated JPEGs from a file-like object and yields `multipart/x-mixed-replace` frame chunks.
+- Four unit tests cover the argv shape (TCP transport + mjpeg output + pipe target), default ffmpeg name, single-buffer multi-frame extraction (small `read_size` exercises buffer carry), and end-of-stream mid-frame handling.
+
+**Deployment:** Not deployed
+**Test Results:** 88/88 passed
+
+---
+
 ### Discover route (POST /discover) returning HTMX partial
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/discovery.py`, `src/ngc_cams_web/templates/_discovered.html`, `tests/test_web_discovery.py`
 
