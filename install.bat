@@ -102,32 +102,28 @@ goto :startup
 
 :startup
 REM --- 6. Auto-start on login ----------------------------------------------
-REM We drop two .cmd stubs directly into the per-user Startup folder. No
-REM PowerShell, no .lnk indirection -- each step ends with an `if exist`
-REM check so you can see in the install log whether the file is really there.
+REM Write two .cmd stubs directly into the per-user Startup folder. We use
+REM goto-labels instead of nested if () blocks because cmd's parser chokes
+REM on the combination of nested parens + `start ""` (empty title), throwing
+REM "was unexpected at this time." Each step ends with `if exist` reporting.
 
 set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 set "STARTUP_SERVER=%STARTUP_DIR%\SISI-TV.cmd"
 set "STARTUP_VIEWER=%STARTUP_DIR%\SISI-TV Viewer.cmd"
+set "REPO_DIR=%~dp0"
 
 echo.
-if not exist "%STARTUP_DIR%" (
-    echo [WARN] Startup folder does not exist: %STARTUP_DIR%
-    echo        Skipping autostart configuration.
-    goto :done
-)
+if not exist "%STARTUP_DIR%" goto :startup_missing
 
-REM Remove any legacy .lnk shortcuts from previous PowerShell-based installs.
+REM Remove legacy .lnk shortcuts from earlier PowerShell-based installs.
 del "%STARTUP_DIR%\SISI-TV.lnk" >nul 2>&1
 del "%STARTUP_DIR%\SISI-TV Viewer.lnk" >nul 2>&1
 
 echo Writing server autostart stub to:
 echo        %STARTUP_SERVER%
-(
-    echo @echo off
-    echo cd /d "%~dp0"
-    echo call "%~dp0start.bat"
-) > "%STARTUP_SERVER%"
+> "%STARTUP_SERVER%"  echo @echo off
+>>"%STARTUP_SERVER%"  echo cd /d "%REPO_DIR%"
+>>"%STARTUP_SERVER%"  echo call "%REPO_DIR%start.bat"
 if exist "%STARTUP_SERVER%" (
     echo [ OK ] Server autostart created. Each login will git pull + launch SISI-TV.
 ) else (
@@ -136,27 +132,32 @@ if exist "%STARTUP_SERVER%" (
 
 REM --- 7. Auto-start the fullscreen viewer (only if pywebview installed) ---
 echo.
-if "%VIEWER_INSTALLED%"=="1" (
-    echo Writing viewer autostart stub to:
-    echo        %STARTUP_VIEWER%
-    (
-        echo @echo off
-        echo cd /d "%~dp0"
-        echo start "" /min "%~dp0.venv\Scripts\sisi-tv-viewer.exe"
-    ) > "%STARTUP_VIEWER%"
-    if exist "%STARTUP_VIEWER%" (
-        echo [ OK ] Viewer autostart created. Each login opens /grid fullscreen.
-    ) else (
-        echo [FAIL] Could not create %STARTUP_VIEWER%.
-    )
+if "%VIEWER_INSTALLED%"=="1" goto :write_viewer
+del "%STARTUP_VIEWER%" >nul 2>&1
+echo [SKIP] Viewer extra not installed; not creating the kiosk shortcut.
+goto :startup_summary
+
+:write_viewer
+echo Writing viewer autostart stub to:
+echo        %STARTUP_VIEWER%
+> "%STARTUP_VIEWER%"  echo @echo off
+>>"%STARTUP_VIEWER%"  echo cd /d "%REPO_DIR%"
+>>"%STARTUP_VIEWER%"  echo start "SISI-TV Viewer" /min "%REPO_DIR%.venv\Scripts\sisi-tv-viewer.exe"
+if exist "%STARTUP_VIEWER%" (
+    echo [ OK ] Viewer autostart created. Each login opens /grid fullscreen.
 ) else (
-    del "%STARTUP_VIEWER%" >nul 2>&1
-    echo [SKIP] Viewer extra not installed; not creating the kiosk shortcut.
+    echo [FAIL] Could not create %STARTUP_VIEWER%.
 )
 
+:startup_summary
 echo.
 echo Startup folder contents:
 dir /b "%STARTUP_DIR%" 2>nul
+goto :done
+
+:startup_missing
+echo [WARN] Startup folder does not exist: %STARTUP_DIR%
+echo        Skipping autostart configuration.
 goto :done
 
 :done

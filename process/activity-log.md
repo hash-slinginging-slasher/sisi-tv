@@ -1,5 +1,17 @@
 ## 2026-05-18
 
+### Fix install.bat parser error in Startup-stub generation
+**Files Changed:** `install.bat`
+
+- Previous revision used nested `if () ( ... > file )` blocks plus `start ""` (empty title). cmd's parser mis-tracks quotes through `""` inside a nested paren block, throwing `. was unexpected at this time.` *after* the pip install completes and *before* step 6 ever runs -- which is why the user's GMKtec install reported no errors visibly but never created the shortcuts.
+- Rewrote step 6/7 to use `goto :label` flow instead of nested parens, single-line `> file echo ...` / `>> file echo ...` redirections instead of `( echo ... ) > file`, and `start "SISI-TV Viewer" /min` instead of `start ""` so the empty-title corner case is gone.
+- Verified with an isolated sandbox test (`_test_startup.bat` redirected to `_test_startup_out\`) that both stubs are written with correct contents and no parser error.
+
+**Deployment:** Not deployed
+**Test Results:** Sandbox dry-run of step 6/7 produced both stubs cleanly.
+
+---
+
 ### Drop PowerShell shortcut layer; write Startup .cmd stubs directly
 **Files Changed:** `install.bat`, `scripts/create-startup-shortcut.ps1` (deleted), `scripts/create-viewer-startup-shortcut.ps1` (deleted)
 
