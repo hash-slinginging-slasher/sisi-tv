@@ -12,16 +12,22 @@ dependencies = [
     "onvif-zeep>=0.2.12",
     "python-vlc>=3.0.20123",
     "wsdiscovery>=2.1.2",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.12",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "ruff>=0.5",
+    "httpx>=0.27",
 ]
 
 [project.scripts]
 ngc-cams = "ngc_cams.app:main"
+ngc-cams-web = "ngc_cams_web.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

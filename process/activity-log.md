@@ -72,6 +72,16 @@
 
 ## 2026-05-17
 
+### Add FastAPI deps + ngc-cams-web entry point
+**Files Changed:** `pyproject.toml`
+
+- Added fastapi, uvicorn[standard], jinja2, python-multipart to runtime deps and httpx to dev deps for the web pivot (kanban: Pivot to FastAPI + HTMX web UI).
+- Registered `ngc-cams-web` console script alongside `ngc-cams`; Qt entry retained until Task 15 removes it.
+
+**Deployment:** Not deployed
+
+---
+
 ### Async stop refactor — non-blocking stop(), poll() reaps dying ffmpegs
 **Files Changed:** `src/ngc_cams/recording/manager.py`, `src/ngc_cams/ui/main_window.py`, `tests/test_recording_manager.py`
 
