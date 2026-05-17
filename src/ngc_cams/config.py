@@ -15,6 +15,8 @@ _EDITABLE_FIELDS: tuple[tuple[str, Any], ...] = (
     ("snapshot_root", lambda v: Path(v)),
     ("segment_seconds", lambda v: int(v)),
     ("disk_guard_free_gb", lambda v: int(v)),
+    ("bind_host", lambda v: str(v).strip()),
+    ("bind_port", lambda v: int(v)),
 )
 
 EDITABLE_FIELD_NAMES: tuple[str, ...] = tuple(name for name, _ in _EDITABLE_FIELDS)
@@ -33,6 +35,8 @@ class AppConfig:
     db_path: Path = field(
         default_factory=lambda: _DEFAULT_STORAGE_ROOT / "ngc-cams.sqlite3"
     )
+    bind_host: str = "127.0.0.1"
+    bind_port: int = 8000
 
     @classmethod
     def from_settings(cls, settings: dict[str, Any] | None = None) -> "AppConfig":

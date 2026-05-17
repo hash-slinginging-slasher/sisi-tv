@@ -15,6 +15,8 @@ _FIELD_LABELS: dict[str, str] = {
     "snapshot_root": "Snapshot root (folder for .jpg snapshots)",
     "segment_seconds": "Segment length (seconds)",
     "disk_guard_free_gb": "Pause recording when free disk drops below (GB)",
+    "bind_host": "Bind host (127.0.0.1 = local only, 0.0.0.0 = LAN-wide)",
+    "bind_port": "Bind port",
 }
 
 
@@ -47,6 +49,7 @@ def settings_page(request: Request, saved: int = 0):
 async def save_settings(request: Request):
     form = await request.form()
     data: dict[str, Any] = {}
+    int_fields = {"segment_seconds", "disk_guard_free_gb", "bind_port"}
     for name in EDITABLE_FIELD_NAMES:
         raw = form.get(name)
         if raw is None:
@@ -54,7 +57,7 @@ async def save_settings(request: Request):
         raw = str(raw).strip()
         if raw == "":
             continue
-        if name in ("segment_seconds", "disk_guard_free_gb"):
+        if name in int_fields:
             try:
                 data[name] = int(raw)
             except ValueError:

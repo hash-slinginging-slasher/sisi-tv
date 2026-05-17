@@ -107,8 +107,14 @@
         <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
             <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base">tune</span>
-                Recording Configuration
+                Recording &amp; Network Configuration
             </h3>
+            {% if values.bind_host not in ('127.0.0.1', 'localhost', '::1') %}
+            <div class="bg-secondary/10 border border-secondary/40 rounded p-2 text-xs text-on-surface">
+                <span class="material-symbols-outlined text-secondary text-sm align-middle">warning</span>
+                Bind host is <code class="text-secondary">{{ values.bind_host }}</code> — anyone on this LAN can reach the app. The app has no authentication; don't expose this to the public internet.
+            </div>
+            {% endif %}
             <form method="post" action="/settings" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {% for name in fields %}
                 <label class="block">

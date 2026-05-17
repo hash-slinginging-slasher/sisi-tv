@@ -72,6 +72,21 @@
 
 ## 2026-05-17
 
+### Configurable LAN bind: bind_host + bind_port in Settings
+**Files Changed:** `src/ngc_cams/config.py`, `src/ngc_cams_web/__main__.py`, `src/ngc_cams_web/routes/settings.py`, `src/ngc_cams_web/templates/settings.html`
+
+- `AppConfig` gained `bind_host: str = "127.0.0.1"` and `bind_port: int = 8000`. Both added to `EDITABLE_FIELDS` so the Settings page persists them to `~/.ngc-cams/settings.json`.
+- `__main__.py` now reads host/port from config instead of hardcoding. When `bind_host` is `0.0.0.0` (or `::`) the boot log lists the LAN IP and hostname URLs so the user knows where to point other devices, and `webbrowser.open` swaps the bind sentinel for `socket.gethostbyname(socket.gethostname())`.
+- Settings template shows a secondary-coloured warning whenever `bind_host` isn't `127.0.0.1`/`localhost`/`::1`, naming the value and reminding the user that the app has no auth.
+- `bind_port` joins `segment_seconds` and `disk_guard_free_gb` in the `int_fields` coercer so bad input is rejected.
+- 133/133 tests pass — existing settings round-trip tests still hold because they only assert on the keys they POST. Ruff clean.
+- Usage: open `/settings`, set `bind_host=0.0.0.0` and `bind_port=8090`, Save, restart. App is then reachable at `http://<computer-name>:8090/` or `http://<lan-ip>:8090/` from any device on the LAN.
+
+**Deployment:** Not deployed
+**Test Results:** 133/133 passed
+
+---
+
 ### Discovery one-click Add + PTZ/recording-on-by-default
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/routes/discovery.py`, `src/ngc_cams_web/templates/_discovered.html`, `src/ngc_cams_web/templates/settings.html`, `tests/test_web_cameras.py`, `tests/test_web_discovery.py`
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import socket
 import sys
 import threading
 import time
@@ -14,6 +15,14 @@ from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams.recording.manager import RecordingManager
 from ngc_cams.segments import SegmentRepository
 from ngc_cams_web.composition import build_app
+
+
+def _lan_hostname() -> str:
+    """Best-guess LAN IP for log/browser convenience when bound to 0.0.0.0."""
+    try:
+        return socket.gethostbyname(socket.gethostname())
+    except OSError:
+        return "127.0.0.1"
 
 
 def main() -> int:
@@ -41,13 +50,24 @@ def main() -> int:
         config=config,
     )
 
-    host, port = "127.0.0.1", 8000
-    url = f"http://{host}:{port}/"
+    host = config.bind_host
+    port = config.bind_port
+    # webbrowser.open should hit a routable address. 0.0.0.0 is a bind sentinel,
+    # not a real destination — use the LAN IP (or 127.0.0.1 as fallback).
+    open_host = host if host not in ("0.0.0.0", "::") else _lan_hostname()
+    open_url = f"http://{open_host}:{port}/"
+
+    print(f"SISI-TV binding {host}:{port}")
+    if host in ("0.0.0.0", "::"):
+        print(f"  LAN: http://{_lan_hostname()}:{port}/")
+        print(f"  Or:  http://{socket.gethostname()}:{port}/")
+        print("  (anyone on this network can reach the app -- no auth)")
+    print(f"  Local: http://127.0.0.1:{port}/")
 
     def _open_when_ready():
-        time.sleep(0.6)  # give uvicorn a moment to bind the socket
+        time.sleep(0.6)
         try:
-            webbrowser.open(url)
+            webbrowser.open(open_url)
         except Exception:
             pass
 
