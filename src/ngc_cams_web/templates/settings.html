@@ -120,6 +120,9 @@
                 <label class="block">
                     <span class="nav-label text-on-surface-variant">{{ labels[name] }}</span>
                     <input name="{{ name }}" value="{{ values[name] }}" class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-xs text-on-surface focus:border-primary focus:outline-none">
+                    {% if values[name] != live_values[name] %}
+                    <span class="block mt-1 text-[10px] font-mono text-secondary">pending restart &mdash; running on: {{ live_values[name] }}</span>
+                    {% endif %}
                 </label>
                 {% endfor %}
                 <div class="md:col-span-2 md:text-right">

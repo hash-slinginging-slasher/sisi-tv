@@ -20,9 +20,20 @@ _FIELD_LABELS: dict[str, str] = {
 }
 
 
-def _current_values(request: Request) -> dict[str, str]:
+def _live_values(request: Request) -> dict[str, str]:
+    """What the running process is using right now (only changes on restart)."""
     config = request.app.state.config
     return {name: str(getattr(config, name)) for name in EDITABLE_FIELD_NAMES}
+
+
+def _form_values(request: Request) -> dict[str, str]:
+    """What goes into the form inputs: persisted overrides first, falling back
+    to the live config for fields the user hasn't customized yet. After a Save
+    the user sees their edit immediately even though it won't take effect until
+    the app restarts."""
+    stored = settings_store.load()
+    live = _live_values(request)
+    return {name: str(stored.get(name, live[name])) for name in EDITABLE_FIELD_NAMES}
 
 
 @router.get("/settings", response_class=HTMLResponse)
@@ -34,7 +45,8 @@ def settings_page(request: Request, saved: int = 0):
         "settings.html",
         {
             "active_nav": "settings",
-            "values": _current_values(request),
+            "values": _form_values(request),
+            "live_values": _live_values(request),
             "labels": _FIELD_LABELS,
             "fields": EDITABLE_FIELD_NAMES,
             "saved": bool(saved),
