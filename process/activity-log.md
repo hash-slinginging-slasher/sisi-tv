@@ -1,5 +1,17 @@
 ## 2026-05-18
 
+### Fix install.bat step 3b parser crash (parens-in-echo)
+**Files Changed:** `install.bat`
+
+- Step 3b's `if errorlevel 1 ( ... echo ... (it currently supports 3.7-3.13). ... ) else ( ... )` block parsed badly because the unescaped `(` inside the echo text closed the outer if-block at parse time, and the trailing `.` became a top-level token cmd couldn't parse -- "`. was unexpected at this time.`" right after the pywebview pip install finished. The whole shortcut step never ran.
+- Same fix pattern as before: replaced the if/else block with `if errorlevel 1 goto :viewer_install_failed` + label, moving the multi-line WARN message to top level where parens in text are harmless.
+- Verified with a sandbox test (`_test_step3b.bat`) running both the success and failure paths; no parser error.
+
+**Deployment:** Not deployed
+**Test Results:** Sandbox dry-run of both branches printed expected output.
+
+---
+
 ### Fix install.bat parser error in Startup-stub generation
 **Files Changed:** `install.bat`
 
