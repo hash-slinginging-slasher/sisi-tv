@@ -36,7 +36,7 @@ The package lives under `src/ngc_cams/` with the layout enforced by `AGENTS.md`.
 - `ngc_cams.db` — schema bootstrap (`cameras`, `recording_segments` with `ON DELETE CASCADE`, `record_mode` CHECK constraint) and `connect()` which enables `PRAGMA foreign_keys = ON` and sets `Row` factory.
 - `ngc_cams.cameras` — `CameraRepository` is the only path to the `cameras` table; UI / services should depend on it, not raw SQL.
 - `ngc_cams.models` — `Camera` / `StoredCamera` dataclasses (frozen) and the `RecordMode` `StrEnum` (`off` / `video_only` / `video_audio`) whose values match the DB CHECK constraint. Adding a mode requires updating both.
-- `ngc_cams.config` — `AppConfig` defaults including `recording_root=D:\ngc-cams-recordings`, `snapshot_root=D:\ngc-cams-snapshots`, 600 s segments, 7-day retention. Keep these paths configurable; do not hardcode them elsewhere.
+- `ngc_cams.config` — `AppConfig` defaults including `recording_root=C:\sisi-tv-storage`, `snapshot_root=C:\sisi-tv-storage\snapshots`, 600 s segments, 7-day retention. Keep these paths configurable; do not hardcode them elsewhere. User overrides live at `~/.ngc-cams/settings.json` via `AppConfig.from_settings()`.
 
 `tests/` mirrors `src/` and currently exercises DB schema/repo, ffmpeg command construction, recording paths, discovery (with an injected fake `wsdiscovery_class`), and the FastAPI routes via `TestClient` with fakes attached to `app.state`. When extending discovery, ONVIF, ffmpeg, or web routes, follow the same pattern: mock the network / subprocess boundary rather than the real device.
 

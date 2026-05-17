@@ -20,15 +20,18 @@ _EDITABLE_FIELDS: tuple[tuple[str, Any], ...] = (
 EDITABLE_FIELD_NAMES: tuple[str, ...] = tuple(name for name, _ in _EDITABLE_FIELDS)
 
 
+_DEFAULT_STORAGE_ROOT = Path(r"C:\sisi-tv-storage")
+
+
 @dataclass(frozen=True)
 class AppConfig:
-    recording_root: Path = Path(r"D:\ngc-cams-recordings")
-    snapshot_root: Path = Path(r"D:\ngc-cams-snapshots")
+    recording_root: Path = _DEFAULT_STORAGE_ROOT
+    snapshot_root: Path = _DEFAULT_STORAGE_ROOT / "snapshots"
     segment_seconds: int = 600
     retention_days: int = 7
     disk_guard_free_gb: int = 10
     db_path: Path = field(
-        default_factory=lambda: Path(r"D:\ngc-cams-recordings\ngc-cams.sqlite3")
+        default_factory=lambda: _DEFAULT_STORAGE_ROOT / "ngc-cams.sqlite3"
     )
 
     @classmethod

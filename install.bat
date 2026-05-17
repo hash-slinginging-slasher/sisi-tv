@@ -69,17 +69,16 @@ goto :after_ffmpeg
 
 REM --- 5. Default storage dirs ---------------------------------------------
 echo.
-if not exist "D:\" goto :no_d_drive
-if not exist "D:\ngc-cams-recordings" mkdir "D:\ngc-cams-recordings" >nul 2>&1
-if not exist "D:\ngc-cams-snapshots"  mkdir "D:\ngc-cams-snapshots"  >nul 2>&1
-echo [ OK ] Default storage dirs ready under D:\.
+if not exist "C:\sisi-tv-storage"           mkdir "C:\sisi-tv-storage"           >nul 2>&1
+if not exist "C:\sisi-tv-storage\snapshots" mkdir "C:\sisi-tv-storage\snapshots" >nul 2>&1
+if errorlevel 1 goto :storage_failed
+echo [ OK ] Default storage dirs ready: C:\sisi-tv-storage
 goto :done
 
-:no_d_drive
-echo [WARN] No D:\ drive detected.
-echo        The app defaults to D:\ngc-cams-recordings\ and D:\ngc-cams-snapshots\.
-echo        Open the Settings page after launch to change them, or pre-create
-echo        %USERPROFILE%\.ngc-cams\settings.json with the right paths.
+:storage_failed
+echo [WARN] Could not create C:\sisi-tv-storage automatically.
+echo        Either run install.bat from an elevated prompt, or open the
+echo        Settings page after launch to point recording_root somewhere writable.
 goto :done
 
 :done

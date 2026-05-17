@@ -72,6 +72,20 @@
 
 ## 2026-05-17
 
+### Move default storage from D:\ to C:\sisi-tv-storage\
+**Files Changed:** `src/ngc_cams/config.py`, `install.bat`, `CLAUDE.md`, `AGENTS.md`
+
+- `AppConfig.recording_root` was `D:\ngc-cams-recordings` and `snapshot_root` was `D:\ngc-cams-snapshots`. On any machine without a `D:\` drive, the first call to `recording_root.mkdir(parents=True, exist_ok=True)` raised `FileNotFoundError [WinError 3]` before the user could even reach the Settings page to fix it.
+- New defaults: `recording_root = C:\sisi-tv-storage`, `snapshot_root = C:\sisi-tv-storage\snapshots`, `db_path = C:\sisi-tv-storage\ngc-cams.sqlite3`. Extracted `_DEFAULT_STORAGE_ROOT` so all three derive from one constant.
+- `install.bat` no longer keys off `D:\`; it always pre-creates `C:\sisi-tv-storage\` + `C:\sisi-tv-storage\snapshots\` and warns if the mkdir fails (likely permission issue → run elevated, or change path in Settings).
+- Existing users with data under `D:\ngc-cams-recordings\` need to set `recording_root` in `~/.ngc-cams/settings.json` (or via the Settings page) to keep using the old data; otherwise the app silently starts a fresh DB at the new location.
+- 129/129 tests pass — `test_config.py` only asserts the relationship `db_path == recording_root / "ngc-cams.sqlite3"`, which still holds. Ruff clean.
+
+**Deployment:** Not deployed
+**Test Results:** 129/129 passed
+
+---
+
 ### SISI-TV design system pass: Tailwind chrome, mascot, four-screen refresh
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/static/boy-sisi.png` (moved from repo root), `src/ngc_cams_web/templates/base.html`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/grid.html`, `src/ngc_cams_web/templates/camera_detail.html`, `src/ngc_cams_web/templates/settings.html`, `src/ngc_cams_web/templates/events.html` (new), `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/routes/events.py` (new), `src/ngc_cams_web/routes/settings.py`
 

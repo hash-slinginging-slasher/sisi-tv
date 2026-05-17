@@ -42,4 +42,4 @@ Pull requests should include a short summary, test results, linked issue or requ
 
 ## Security & Configuration Tips
 
-Do not commit camera passwords, RTSP URLs containing credentials, SQLite databases, recordings, snapshots, or generated `.exe` files. Keep storage paths configurable; the PRD defaults to `D:\ngc-cams-recordings\` and `D:\ngc-cams-snapshots\`.
+Do not commit camera passwords, RTSP URLs containing credentials, SQLite databases, recordings, snapshots, or generated `.exe` files. Keep storage paths configurable; the app defaults to `C:\sisi-tv-storage\` (recordings) and `C:\sisi-tv-storage\snapshots\`. Users can override via the Settings page (writes `~/.ngc-cams/settings.json`).
