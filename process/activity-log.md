@@ -72,6 +72,16 @@
 
 ## 2026-05-17
 
+### Add `timeout_graceful_shutdown=5` to uvicorn.run
+**Files Changed:** `src/ngc_cams_web/__main__.py`
+
+- Ctrl-C in the console hung indefinitely during smoke test because uvicorn's default graceful shutdown waits for active connections, and the live MJPEG `<img>` in the open browser tab kept the response open forever. Capping shutdown at 5 s lets Ctrl-C actually terminate the process even when a live stream is in flight.
+
+**Deployment:** Not deployed
+**Test Results:** 93/93 passed
+
+---
+
 ### ngc-cams-web console entry: composes real deps + lifespan poll + opens browser
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`
 

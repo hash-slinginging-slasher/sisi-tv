@@ -49,7 +49,13 @@ def main() -> int:
             pass
 
     threading.Thread(target=_open_when_ready, daemon=True).start()
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level="info",
+        timeout_graceful_shutdown=5,
+    )
     connection.close()
     return 0
 
