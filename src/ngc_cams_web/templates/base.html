@@ -111,8 +111,10 @@
         }
         @keyframes low-batt-blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
         .fnaf-filter .low-batt, .mgs-filter .low-batt {
+            /* Sits in the top-right; LIVE/REC badges live top-left so no
+               overlap there, but keep some breathing room from the edge. */
             display: block; color: #0f0; font-family: 'JetBrains Mono', monospace;
-            font-size: 10px; position: absolute; top: 8px; right: 8px; z-index: 35;
+            font-size: 10px; position: absolute; top: 10px; right: 10px; z-index: 35;
             animation: low-batt-blink calc(0.9s + var(--feed-seed) * 0.13s) steps(1) infinite;
             animation-delay: calc(var(--feed-seed) * -0.41s);
         }
@@ -137,14 +139,25 @@
         }
 
         /* === Static === */
+        /* "Only one monitor shakes at a time": each tile runs a 15s cycle
+           where 92% of the time the image is still and ~8% is a brief shake
+           burst. Per-tile delay (-1.7s * fib seed) scatters which tile is
+           currently in its burst window. With fib spreading, two cameras
+           rarely overlap their shake windows. */
         .static-filter img {
             filter: grayscale(1) contrast(1.8) brightness(0.9);
-            animation: feed-jitter 0.2s infinite;
-            animation-delay: calc(var(--feed-seed) * -0.07s);
+            animation: feed-jitter-burst 15s linear infinite;
+            animation-delay: calc(var(--feed-seed) * -1.7s);
         }
-        @keyframes feed-jitter {
-            0% { transform: translateX(0); } 10% { transform: translateX(1px); }
-            20% { transform: translateX(-1px); } 30% { transform: translateX(0); }
+        @keyframes feed-jitter-burst {
+            0%, 91% { transform: translateX(0); }
+            92% { transform: translateX(2px); }
+            93% { transform: translateX(-3px); }
+            94% { transform: translateX(2px) translateY(-1px); }
+            95% { transform: translateX(-2px) translateY(1px); }
+            96% { transform: translateX(3px); }
+            97% { transform: translateX(-1px); }
+            98%, 100% { transform: translateX(0); }
         }
         .static-filter .static-overlay {
             display: block; position: absolute; inset: -20%; pointer-events: none;
@@ -159,10 +172,14 @@
             50% { transform: translate(2%,2%); }
             75% { transform: translate(-1%,1%); }
         }
-        /* Static degraded: blown-out dead channel */
+        /* Static degraded: dead channel + always-shaking (broken camera) */
         .static-filter.variant-degraded img {
             filter: grayscale(1) contrast(3) brightness(0.5);
-            animation-duration: 0.08s;
+            animation: feed-jitter-constant 0.18s infinite;
+        }
+        @keyframes feed-jitter-constant {
+            0% { transform: translateX(0); } 25% { transform: translateX(2px); }
+            50% { transform: translateX(-2px); } 75% { transform: translateX(1px); }
         }
         .static-filter.variant-degraded .static-overlay { opacity: 0.55; }
 
@@ -189,8 +206,10 @@
             0% { transform: translateY(-100%); } 100% { transform: translateY(100%); }
         }
         .vhs-filter .rec-text, .mgs-filter .rec-text {
+            /* Moved down so it doesn't crash into the LIVE/REC badges which
+               sit at top:8 / left:8..67. */
             display: block; color: #f00; font-family: 'Courier New', monospace; font-weight: bold;
-            position: absolute; top: 8px; left: 40px; z-index: 22; text-shadow: 2px 2px #000;
+            position: absolute; top: 30px; left: 10px; z-index: 22; text-shadow: 2px 2px #000;
         }
         /* VHS degraded: heavy red-shift + faster tracking + thicker bands */
         .vhs-filter.variant-degraded img {
@@ -221,7 +240,10 @@
         }
         .mgs-filter .mgs-ui {
             display: flex; flex-direction: column; justify-content: space-between;
-            position: absolute; inset: 0; padding: 10px; z-index: 30; pointer-events: none;
+            position: absolute; inset: 0;
+            /* Top padding pushed past the LIVE/REC badge row (~24px tall +
+               8px from container edge) so MGS UI text doesn't overlap. */
+            padding: 32px 10px 10px 10px; z-index: 30; pointer-events: none;
             font-family: 'JetBrains Mono', monospace; color: #00ff66;
             text-transform: uppercase; font-weight: 700; font-size: 9px;
             text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
