@@ -24,6 +24,10 @@ def build_segment_command(
         str(segment_seconds),
         "-reset_timestamps",
         "1",
+        # ffmpeg 8+ requires -strftime 1 to interpret %Y / %m / %d / %H etc
+        # in the output filename template. Older versions auto-detected.
+        "-strftime",
+        "1",
         # Per-segment MP4 muxer options: write moov atom at the front so each
         # segment is browser/mobile-playable without re-muxing.
         "-segment_format_options",
@@ -38,12 +42,6 @@ def build_segment_command(
         ffmpeg,
         "-rtsp_transport",
         "tcp",
-        "-reconnect",
-        "1",
-        "-reconnect_streamed",
-        "1",
-        "-reconnect_delay_max",
-        "5",
         "-i",
         rtsp_url,
         "-c",

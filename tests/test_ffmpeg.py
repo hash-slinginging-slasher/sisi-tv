@@ -18,7 +18,9 @@ def test_video_only_command_drops_audio():
     assert "-an" in command
     assert "0:v" in command
     assert "-rtsp_transport" in command
-    assert "-reconnect" in command
+    # No `-reconnect` flags: ffmpeg 8+ moved them to HTTP-only and the
+    # recording manager handles process restart instead.
+    assert "-reconnect" not in command
 
 
 def test_video_audio_command_uses_optional_audio_map():
