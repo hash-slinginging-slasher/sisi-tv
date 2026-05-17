@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Add-camera route (POST /cameras/add)
+**Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
+
+- New POST handler that accepts `name` + `rtsp_url` form fields, inserts via `CameraRepository.add`, and 303-redirects to `/` (web-pivot Task 6).
+- TestClient asserts the redirect status, the Location header, and that the camera was actually persisted.
+
+**Deployment:** Not deployed
+**Test Results:** 77/77 passed
+
+---
+
 ### Enable cross-thread sqlite usage in `ngc_cams.db.connect()`
 **Files Changed:** `src/ngc_cams/db.py`
 

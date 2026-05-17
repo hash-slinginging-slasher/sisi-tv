@@ -43,3 +43,19 @@ def test_index_when_no_cameras_shows_empty_state():
         response = client.get("/")
     assert response.status_code == 200
     assert "No cameras yet" in response.text
+
+
+def test_post_add_creates_camera_and_redirects_to_index():
+    app, repo = _build()
+    with TestClient(app) as client:
+        response = client.post(
+            "/cameras/add",
+            data={"name": "New Cam", "rtsp_url": "rtsp://1.2.3.4/main"},
+            follow_redirects=False,
+        )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
+    stored = repo.list()
+    assert len(stored) == 1
+    assert stored[0].name == "New Cam"
+    assert stored[0].rtsp_url == "rtsp://1.2.3.4/main"
