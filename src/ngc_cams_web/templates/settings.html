@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Settings — ngc-cams{% endblock %}
+{% block content %}
+<h2>Settings</h2>
+<p><a href="/">← Back to all cameras</a></p>
+
+{% if saved %}
+<p style="background: #efe; padding: 0.5rem; border: 1px solid #8b8;">
+    Saved. <strong>Restart <code>ngc-cams-web</code> for changes to take effect</strong>
+    (recording manager and DB connection are constructed at startup).
+</p>
+{% endif %}
+
+<form method="post" action="/settings">
+    {% for name in fields %}
+    <p>
+        <label>
+            {{ labels[name] }}<br>
+            <input name="{{ name }}" value="{{ values[name] }}" size="60">
+        </label>
+    </p>
+    {% endfor %}
+    <button type="submit">Save</button>
+</form>
+
+<h3>Notes</h3>
+<ul>
+    <li>Settings are stored at <code>{{ stored_path }}</code> and override the built-in defaults.</li>
+    <li>Leaving a field empty keeps the previously saved value.</li>
+    <li>The database (<code>ngc-cams.sqlite3</code>) stays where it was created and is not relocated by changing the recording root.</li>
+</ul>
+{% endblock %}

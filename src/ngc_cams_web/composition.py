@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 
 from ngc_cams.cameras import CameraRepository
+from ngc_cams.config import AppConfig
 from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams.onvif.ptz import PTZService
 from ngc_cams.recording.retention import prune_all
@@ -18,6 +19,7 @@ from ngc_cams_web.routes import cameras as cameras_routes
 from ngc_cams_web.routes import discovery as discovery_routes
 from ngc_cams_web.routes import live as live_routes
 from ngc_cams_web.routes import ptz as ptz_routes
+from ngc_cams_web.routes import settings as settings_routes
 
 logger = logging.getLogger(__name__)
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -92,6 +94,7 @@ def build_app(
     segments: SegmentRepository | None = None,
     lifespan_poll_seconds: float | None = None,
     retention_interval_seconds: float | None = None,
+    config: AppConfig | None = None,
 ) -> FastAPI:
     lifespan = (
         _build_lifespan(
@@ -110,6 +113,7 @@ def build_app(
     app.state.recording_manager = recording_manager
     app.state.segments = segments
     app.state.ptz_service = PTZService()
+    app.state.config = config if config is not None else AppConfig()
     app.state.templates = Jinja2Templates(directory=str(_TEMPLATE_DIR))
 
     @app.get("/healthz")
@@ -120,4 +124,5 @@ def build_app(
     app.include_router(discovery_routes.router)
     app.include_router(live_routes.router)
     app.include_router(ptz_routes.router)
+    app.include_router(settings_routes.router)
     return app

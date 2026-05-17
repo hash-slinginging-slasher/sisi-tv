@@ -72,6 +72,21 @@
 
 ## 2026-05-17
 
+### Settings page (GET/POST /settings) — configurable recording paths
+**Files Changed:** `src/ngc_cams/settings_store.py` (new), `src/ngc_cams/config.py`, `src/ngc_cams_web/routes/settings.py` (new), `src/ngc_cams_web/templates/settings.html` (new), `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_settings_store.py` (new), `tests/test_web_settings.py` (new)
+
+- New `ngc_cams.settings_store` module persists overrides as JSON at `~/.ngc-cams/settings.json` (independent of `recording_root` so the user can move recordings without losing the override file). Save uses an atomic `.tmp` + `replace` pattern. Unknown keys round-trip so older versions don't strip newer settings.
+- `AppConfig.from_settings(settings)` builds a config whose `recording_root`, `snapshot_root`, `segment_seconds`, and `disk_guard_free_gb` come from the JSON file (or whatever dict you pass). Coercion errors and unknown keys fall back silently to defaults. `EDITABLE_FIELD_NAMES` is the explicit allow-list.
+- `GET /settings` renders the editable fields prefilled from `app.state.config`. `POST /settings` validates (skip blanks → keep prior value, skip invalid ints) and persists the merged dict, then 303-redirects to `/settings?saved=1` which shows a "Restart required" banner — `RecordingManager` and the SQLite connection are constructed at startup.
+- `__main__.py` now calls `AppConfig.from_settings()` so the next `ngc-cams-web` boot picks up whatever the user saved.
+- Index page gained a "Settings →" link next to "View grid".
+- Tests: settings_store JSON round-trip + corruption fallbacks, `AppConfig.from_settings` overrides + unknown-key safety + bad-value safety, route GET/POST/blank-preserves-prior/invalid-int-ignored/saved-banner/storage-path-displayed. A `monkeypatch` fixture isolates `default_settings_path` so the suite never touches the real `~/.ngc-cams/settings.json`.
+
+**Deployment:** Not deployed
+**Test Results:** 129/129 passed
+
+---
+
 ### Grid view (GET /grid) + close out-of-process player card
 **Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/grid.html` (new), `src/ngc_cams_web/templates/index.html`, `tests/test_web_cameras.py`, `kanban-to.md`
 

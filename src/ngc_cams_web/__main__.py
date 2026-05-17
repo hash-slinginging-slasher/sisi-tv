@@ -17,7 +17,7 @@ from ngc_cams_web.composition import build_app
 
 
 def main() -> int:
-    config = AppConfig()
+    config = AppConfig.from_settings()
     connection = connect(config.db_path)
     initialize(connection)
     cameras = CameraRepository(connection)
@@ -38,6 +38,7 @@ def main() -> int:
         segments=segments,
         lifespan_poll_seconds=1.0,
         retention_interval_seconds=300.0,
+        config=config,
     )
 
     host, port = "127.0.0.1", 8000
