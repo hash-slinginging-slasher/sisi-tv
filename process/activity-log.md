@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Create ngc_cams_web package skeleton with __version__
+**Files Changed:** `src/ngc_cams_web/__init__.py`, `tests/test_web_package.py`
+
+- TDD: wrote two failing tests (`test_package_is_importable`, `test_package_has_version_attribute`), then created `src/ngc_cams_web/__init__.py` exporting `__version__ = "0.1.0"`.
+- Reinstalled with `pip install -e ".[dev]" --no-deps` so setuptools rescanned `src/` and picked up the new package.
+
+**Deployment:** Not deployed
+**Test Results:** 2/2 passed in `tests/test_web_package.py`
+
+---
+
 ### Add FastAPI deps + ngc-cams-web entry point
 **Files Changed:** `pyproject.toml`
 
