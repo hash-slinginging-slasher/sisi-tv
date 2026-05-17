@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Build FastAPI composition root and /healthz route
+**Files Changed:** `src/ngc_cams_web/composition.py`, `tests/test_web_composition.py`
+
+- Added `build_app(cameras, discovery, recording_manager, live_stream_manager)` factory that returns a FastAPI app with each collaborator on `app.state` (web-pivot Task 4).
+- Tied off the wiring with a `/healthz` smoke route asserted via `fastapi.testclient.TestClient`; recording_manager / live_stream_manager accept None so later-task collaborators can be plugged in incrementally.
+
+**Deployment:** Not deployed
+**Test Results:** 1/1 passed
+
+---
+
 ### Move discovery_runner out of ngc_cams.ui to top-level
 **Files Changed:** `src/ngc_cams/discovery_runner.py`, `src/ngc_cams/ui/discovery_runner.py` (deleted), `src/ngc_cams/ui/discovered_tab.py`, `src/ngc_cams/ui/discovery_worker.py`, `tests/test_discovery_runner.py`
 
