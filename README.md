@@ -4,6 +4,17 @@ SISI-TV is a personal Windows app for discovering ONVIF cameras, resolving RTSP 
 
 The product scope is captured in `odm-replacement-prd_1.md`. The implementation pivot from Qt to a web UI is recorded in `kanban-to.md` and `docs/plans/2026-05-17-web-pivot.md`.
 
+## Quick start (Windows)
+
+```cmd
+git clone https://github.com/hash-slinginging-slasher/sisi-tv.git
+cd sisi-tv
+install.bat
+.venv\Scripts\sisi-tv.exe
+```
+
+`install.bat` checks for Python 3.11+, creates `.venv`, installs the Python deps, installs ffmpeg via winget if missing, and pre-creates the default storage dirs.
+
 ## Development
 
 ```powershell
