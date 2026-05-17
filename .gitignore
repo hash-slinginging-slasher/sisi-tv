@@ -13,4 +13,7 @@ dist/
 *.mp4
 *.jpg
 .claude/settings.local.json
+.playwright-mcp/
+fnaf-grid-state.png
+page-*.png
 
