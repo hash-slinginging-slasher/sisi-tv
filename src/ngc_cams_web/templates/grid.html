@@ -52,7 +52,7 @@
     {% set variant = 'variant-degraded' if (cam.id % 3 == 0) else 'variant-stable' %}
     <div data-camera-id="{{ cam.id }}"
          draggable="true"
-         style="--feed-seed: {{ cam.id }};"
+         style="--feed-seed: {{ feed_seeds[cam.id] }};"
          class="grid-tile filter-container {% if feed_filter != 'normal' %}{{ feed_filter }}-filter {{ variant }}{% endif %} group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
         <a href="/cameras/{{ cam.id }}" class="block w-full h-full">
             <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"

@@ -91,6 +91,22 @@ def _coerce_feed_filter(value) -> str:
     return "normal"
 
 
+def feed_seed(camera_id: int) -> int:
+    """Per-camera Fibonacci seed used to desync filter animations.
+
+    Returns fib(camera_id + 2) so cams 1 and 2 don't both get 1 (which would
+    leave them in lockstep). The golden-ratio growth between adjacent fib
+    numbers means no two cameras land in resonance with the same animation
+    period, which is the whole point of the seed.
+    """
+    if camera_id < 1:
+        return 1
+    a, b = 1, 1
+    for _ in range(camera_id + 1):
+        a, b = b, a + b
+    return a
+
+
 @router.get("/grid", response_class=HTMLResponse)
 def grid(request: Request):
     from ngc_cams import settings_store
@@ -108,6 +124,7 @@ def grid(request: Request):
         columns = "auto"
     feed_filter = _coerce_feed_filter(stored.get("feed_filter"))
     visible = _ordered_cameras(cameras, order)
+    feed_seeds = {cam.id: feed_seed(cam.id) for cam in visible}
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request,
@@ -118,6 +135,7 @@ def grid(request: Request):
             "columns": columns,
             "feed_filter": feed_filter,
             "feed_filters": FEED_FILTERS,
+            "feed_seeds": feed_seeds,
         },
     )
 
@@ -287,5 +305,6 @@ def camera_detail(request: Request, camera_id: int):
             "camera": stored,
             "snapshots": snapshots,
             "feed_filter": feed_filter,
+            "feed_seed": feed_seed(stored.id),
         },
     )

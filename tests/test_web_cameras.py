@@ -590,9 +590,12 @@ def test_grid_tiles_get_distinct_variants_and_seeds(tmp_path, monkeypatch):
     # camera_id 3 and 6 (id % 3 == 0) should be degraded; the rest stable.
     assert response.text.count("variant-degraded group") == 2
     assert response.text.count("variant-stable group") == 4
-    # Each tile has a unique --feed-seed wired to its camera id.
-    for cam_id in range(1, 7):
-        assert f"--feed-seed: {cam_id};" in response.text
+    # Each tile gets a Fibonacci seed (fib(id+2)) to desync its animations:
+    # ids 1..6 -> 2, 3, 5, 8, 13, 21. Golden-ratio growth means no two
+    # adjacent cameras share an animation period.
+    expected_seeds = [2, 3, 5, 8, 13, 21]
+    for seed in expected_seeds:
+        assert f"--feed-seed: {seed};" in response.text
 
 
 def test_grid_omits_variant_class_when_filter_normal(tmp_path, monkeypatch):
