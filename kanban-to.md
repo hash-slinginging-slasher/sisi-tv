@@ -9,13 +9,6 @@ Source of truth for what's next on the personal-app roadmap. Move cards across c
 ### Out-of-process video player (deferred alternative)
 Could keep Qt but isolate libvlc in a separate child process for crash resilience — ODM uses this pattern (`odm.player.host.exe` separate from the main WPF app). Defer unless the web pivot stalls; web naturally provides the same isolation (browser is the "player host").
 
-### PTZ controls
-For cameras with `ptz_enabled=True`, surface a directional pad (up / down / left / right / zoom in / zoom out / stop) on the camera detail page. Buttons POST to `/cameras/{id}/ptz/{direction}` and `/cameras/{id}/ptz/stop`; the ONVIF call itself stays in `src/ngc_cams/onvif/ptz.py` (UI-agnostic).
-
-- **Touches:** new `src/ngc_cams/onvif/ptz.py` (wraps `ContinuousMove` / `Stop`, accepts an injected ONVIF service factory for tests), new PTZ route in `src/ngc_cams_web/routes/`, PTZ controls block in `templates/camera_detail.html` rendered only when `camera.ptz_enabled`, tests for the service wrapper with a fake ONVIF.
-- **Open questions:** Step-based vs. continuous moves? Start with continuous-while-button-pressed and Stop on release; keyboard-arrow support is YAGNI for round 1.
-- **Done when:** With a PTZ-capable camera selected, pressing a direction moves the camera; releasing stops it; cameras without PTZ don't see the controls.
-
 ### Grid view of multiple cameras
 A CSS grid of `<img src="/cameras/N/live.mjpg">` elements showing every camera at once; clicking a cell promotes it to the single-camera detail page.
 
@@ -33,6 +26,7 @@ _empty_
 
 ## Done
 
+- **2026-05-17** — PTZ controls. New `ngc_cams.onvif.ptz.PTZService` wraps ONVIF `ContinuousMove` / `Stop` with an injectable `onvif_factory` for tests; covers up/down/left/right/zoom_in/zoom_out via a fixed velocity table. `POST /cameras/{id}/ptz/{direction}` + `POST /cameras/{id}/ptz/stop` routes drive it (404 unknown camera, 409 PTZ-disabled, 422 bad direction, 502 ONVIF error). `camera_detail.html` renders a 3x3 directional pad with mousedown/touchstart → move and mouseup/mouseleave/touchend → stop. Add-camera form gained a PTZ checkbox. 21 new tests, 110/110, ruff clean.
 - **2026-05-17** — Disk guard wired into `RecordingManager.start()`. New `disk_guard_free_gb` + `disk_usage_fn` ctor args; `__main__.py` passes `config.disk_guard_free_gb`. When free space drops below the threshold, `start()` skips the ffmpeg spawn (transient — *not* added to `_failed_camera_ids`) and logs a one-shot warning; when disk recovers, logs a recovery info line and resumes. Five new tests cover low-disk block, log-once behaviour, recovery resume, guard-disabled, and fail-open on `shutil.disk_usage` errors. 90/90 tests, ruff clean.
 - **2026-05-17** — Concurrency hardening: per-connection `threading.RLock` around every `CameraRepository` / `SegmentRepository` method. New `ngc_cams.db.lock_for(connection)` returns the same `RLock` for every caller sharing one connection; the registry is a module-level dict keyed by `id(connection)` because `sqlite3.Connection` is a C type that doesn't accept attribute assignment. Concurrency regression tests hammer 8 threads × 20 record-mode toggles and 6 threads × 25 segment inserts with no exceptions and exact final counts. 85/85 tests, ruff clean.
 - **2026-05-17** — Surface poller failures in the log. Replaced the bare `pass` on `recording_manager.poll()` / `stop_all()` failures with `logger.exception("recording poll tick failed")` and `... stop_all failed` so uvicorn's stderr captures the traceback. Regression test wires a `_FlakyRecordingManager` that raises on tick 1, asserts the message is logged with `exc_info`, and that the poller keeps ticking. 80/80 tests, ruff clean.

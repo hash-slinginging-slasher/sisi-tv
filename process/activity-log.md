@@ -72,6 +72,20 @@
 
 ## 2026-05-17
 
+### PTZ controls on the camera detail page
+**Files Changed:** `src/ngc_cams/onvif/ptz.py` (new), `src/ngc_cams_web/routes/ptz.py` (new), `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/camera_detail.html`, `tests/test_ptz.py` (new), `tests/test_web_ptz.py` (new), `kanban-to.md`
+
+- `ngc_cams.onvif.ptz.PTZService` is the UI-agnostic ONVIF wrapper: `move(host, port, username, password, direction)` calls `ContinuousMove` with the velocity from a fixed direction → vector table (`up/down/left/right` for PanTilt, `zoom_in/zoom_out` for Zoom). `stop()` calls `Stop({PanTilt: True, Zoom: True})`. Both auto-resolve the first ONVIF profile token. ONVIF errors wrap as `PTZError`. `onvif_factory` ctor arg follows the same testing seam as `streams.get_stream_uris`.
+- `POST /cameras/{id}/ptz/{direction}` and `POST /cameras/{id}/ptz/stop` plumb the call. 404 unknown camera; 409 when `camera.ptz_enabled` is False; 422 unknown direction; 502 on `PTZError`. `composition.build_app` constructs a default `PTZService` and exposes it on `app.state.ptz_service`; tests swap in a spy.
+- `camera_detail.html` renders a 3×3 directional pad (`↑ ← + → ↓ −`) only when `camera.ptz_enabled`. Inline JS attaches mousedown/touchstart → POST direction, mouseup/mouseleave/touchend/touchcancel → POST stop. Press-and-hold UX as the kanban specified.
+- Added a PTZ checkbox to the add-camera form so PTZ-capable devices can actually be marked from the UI; `POST /cameras/add` accepts a new optional `ptz_enabled` form field.
+- ONVIF endpoint derived from RTSP URL host with port 80 default — most cameras expose ONVIF on the same host on the standard HTTP port. A future card can add an explicit `onvif_url` column when a non-standard setup demands it.
+
+**Deployment:** Not deployed
+**Test Results:** 110/110 passed
+
+---
+
 ### Disk guard for `RecordingManager.start()`
 **Files Changed:** `src/ngc_cams/recording/manager.py`, `src/ngc_cams_web/__main__.py`, `tests/test_recording_manager.py`, `kanban-to.md`
 

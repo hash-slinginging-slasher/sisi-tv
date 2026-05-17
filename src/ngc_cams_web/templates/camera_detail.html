@@ -8,5 +8,45 @@
 <form method="post" action="/cameras/{{ camera.id }}/record">
     <button type="submit">Toggle record</button>
 </form>
+
+{% if camera.ptz_enabled %}
+<h3>PTZ</h3>
+<div id="ptz-pad" data-camera-id="{{ camera.id }}" style="display: grid; grid-template-columns: repeat(3, 3rem); gap: 0.25rem; margin: 0.5rem 0;">
+    <span></span>
+    <button type="button" data-direction="up">↑</button>
+    <span></span>
+    <button type="button" data-direction="left">←</button>
+    <button type="button" data-direction="zoom_in" title="Zoom in">+</button>
+    <button type="button" data-direction="right">→</button>
+    <span></span>
+    <button type="button" data-direction="down">↓</button>
+    <button type="button" data-direction="zoom_out" title="Zoom out">−</button>
+</div>
+<script>
+(function () {
+    const pad = document.getElementById("ptz-pad");
+    if (!pad) return;
+    const cameraId = pad.getAttribute("data-camera-id");
+    const post = (url) => fetch(url, { method: "POST" }).catch(() => {});
+    const stopUrl = `/cameras/${cameraId}/ptz/stop`;
+    pad.querySelectorAll("button[data-direction]").forEach((btn) => {
+        const dir = btn.getAttribute("data-direction");
+        const moveUrl = `/cameras/${cameraId}/ptz/${dir}`;
+        const start = (event) => {
+            event.preventDefault();
+            post(moveUrl);
+        };
+        const stop = () => post(stopUrl);
+        btn.addEventListener("mousedown", start);
+        btn.addEventListener("touchstart", start, { passive: false });
+        btn.addEventListener("mouseup", stop);
+        btn.addEventListener("mouseleave", stop);
+        btn.addEventListener("touchend", stop);
+        btn.addEventListener("touchcancel", stop);
+    });
+})();
+</script>
+{% endif %}
+
 <p><a href="/">← Back to all cameras</a></p>
 {% endblock %}

@@ -22,8 +22,11 @@ def add_camera(
     request: Request,
     name: str = Form(...),
     rtsp_url: str = Form(...),
+    ptz_enabled: str | None = Form(default=None),
 ):
-    request.app.state.cameras.add(Camera(name=name, rtsp_url=rtsp_url))
+    request.app.state.cameras.add(
+        Camera(name=name, rtsp_url=rtsp_url, ptz_enabled=bool(ptz_enabled))
+    )
     return RedirectResponse("/", status_code=303)
 
 
