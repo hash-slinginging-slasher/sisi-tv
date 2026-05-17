@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from ngc_cams.ui.discovery_runner import DiscoveryResult, ResolveStreams, run_discovery
+from ngc_cams.discovery_runner import DiscoveryResult, ResolveStreams, run_discovery
 
 
 class DiscoveryWorker(QThread):

@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Move discovery_runner out of ngc_cams.ui to top-level
+**Files Changed:** `src/ngc_cams/discovery_runner.py`, `src/ngc_cams/ui/discovery_runner.py` (deleted), `src/ngc_cams/ui/discovered_tab.py`, `src/ngc_cams/ui/discovery_worker.py`, `tests/test_discovery_runner.py`
+
+- Moved the Qt-free `run_discovery` / `DiscoveryResult` module from `ngc_cams.ui` to top-level `ngc_cams.discovery_runner` so the upcoming web layer can import it without dragging Qt in, and so Task 15 can later delete `ui/` cleanly.
+- Updated two callers (`discovered_tab.py`, `discovery_worker.py`) and `tests/test_discovery_runner.py` to the new import path.
+- Body unchanged — pure move + import rewrite.
+
+**Deployment:** Not deployed
+**Test Results:** 73/73 passed (full suite, `--basetemp=.pytest-tmp`); ruff clean.
+
+---
+
 ### Create ngc_cams_web package skeleton with __version__
 **Files Changed:** `src/ngc_cams_web/__init__.py`, `tests/test_web_package.py`
 

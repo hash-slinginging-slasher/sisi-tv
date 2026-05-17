@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from ngc_cams.onvif.discovery import DiscoveredCamera, DiscoveryService
-from ngc_cams.ui.discovery_runner import DiscoveryResult, ResolveStreams
+from ngc_cams.discovery_runner import DiscoveryResult, ResolveStreams
 from ngc_cams.ui.discovery_worker import DiscoveryWorker
 
 

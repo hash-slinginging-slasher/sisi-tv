@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ngc_cams.onvif.discovery import DiscoveredCamera
-from ngc_cams.ui.discovery_runner import DiscoveryResult, run_discovery
+from ngc_cams.discovery_runner import DiscoveryResult, run_discovery
 
 
 class _FakeDiscovery:
