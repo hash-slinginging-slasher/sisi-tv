@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-python -m ngc_cams        # launch the desktop app
+ngc-cams-web              # launch the web app on 127.0.0.1:8000
 pytest                    # run the whole suite
 pytest tests/test_db.py::test_initialize_creates_core_tables   # single test
 ruff check .              # lint (configured in pyproject.toml, line-length 100)
@@ -30,8 +30,7 @@ Packaging target (not yet committed): `pyinstaller ngc-cams.spec` produces the p
 
 The package lives under `src/ngc_cams/` with the layout enforced by `AGENTS.md`. Each subpackage owns one concern and should not reach into another's internals:
 
-- `ngc_cams.app` — Qt bootstrap (`main()` constructs `QApplication`, shows `MainWindow`). The console entry point `ngc-cams` in `pyproject.toml` resolves to this.
-- `ngc_cams.ui` — PyQt6 windows and widgets. Keep view models thin and free of ONVIF / ffmpeg imports.
+- `ngc_cams_web` — FastAPI + HTMX web UI served on `127.0.0.1:8000`. Composition root in `composition.py` builds a `FastAPI` instance with every collaborator (`CameraRepository`, `DiscoveryService`, `RecordingManager`) attached to `app.state`. Routes split across `routes/cameras.py` (CRUD + detail), `routes/discovery.py`, and `routes/live.py` (MJPEG live view). `__main__.py` wires real collaborators, registers a poll lifespan that calls `RecordingManager.poll()` every second, and runs uvicorn. Templates in `templates/` (`base.html`, `index.html`, `camera_detail.html`, `_discovered.html`).
 - `ngc_cams.onvif` — `discovery.py` (WS-Discovery → `DiscoveredCamera` with manufacturer pulled from ONVIF scope URIs) and `streams.py` (`get_stream_uris` calls `GetStreamUri` and returns up to a main + sub URI). The `wsdiscovery_class` / lazy `onvif.ONVIFCamera` imports exist so tests can inject fakes — preserve that seam.
 - `ngc_cams.recording` — `ffmpeg.py` (`build_segment_command`: `-c copy`, TCP RTSP, segment muxer, audio toggled by `RecordMode`) and `paths.py` (`safe_camera_dir_name`, `segment_output_pattern` writing to `<root>/<camera>/<date>/%Y-%m-%d_%H-%M-%S.mp4`). All ffmpeg argv construction must stay centralized in `build_segment_command` so reconnect, audio, and segment options stay testable in one place.
 - `ngc_cams.db` — schema bootstrap (`cameras`, `recording_segments` with `ON DELETE CASCADE`, `record_mode` CHECK constraint) and `connect()` which enables `PRAGMA foreign_keys = ON` and sets `Row` factory.

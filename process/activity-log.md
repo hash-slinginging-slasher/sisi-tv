@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Remove Qt UI and PyQt6/python-vlc deps (web pivot Task 15)
+**Files Changed:** `pyproject.toml`, `CLAUDE.md`, `kanban-to.md`, deleted: `src/ngc_cams/ui/`, `src/ngc_cams/app.py`, `src/ngc_cams/vlc_logging.py`, `src/ngc_cams/__main__.py`, `tests/test_camera_form.py`, `tests/test_vlc_logging.py`
+
+- Deleted the Qt UI and its libvlc logging helper; dropped the PyQt6 and python-vlc runtime dependencies and the `ngc-cams` console script. `ngc-cams-web` is now the only entry point.
+- Updated `CLAUDE.md` to describe `ngc_cams_web` instead of `ngc_cams.app` / `ngc_cams.ui`, and rewrote the launch command to `ngc-cams-web`.
+- Moved the "Pivot to FastAPI + HTMX web UI" kanban card to Done; trimmed the PTZ and Grid cards to drop Qt-specific implementation details.
+
+**Deployment:** Not deployed
+**Test Results:** 76/76 passed (with `test_camera_form.py` and `test_vlc_logging.py` deleted)
+
+---
+
 ### Add `timeout_graceful_shutdown=5` to uvicorn.run
 **Files Changed:** `src/ngc_cams_web/__main__.py`
 

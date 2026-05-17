@@ -8,9 +8,7 @@ version = "0.1.0"
 description = "Personal ONVIF camera manager with RTSP live view and recording."
 requires-python = ">=3.11"
 dependencies = [
-    "PyQt6>=6.7",
     "onvif-zeep>=0.2.12",
-    "python-vlc>=3.0.20123",
     "wsdiscovery>=2.1.2",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
@@ -26,7 +24,6 @@ dev = [
 ]
 
 [project.scripts]
-ngc-cams = "ngc_cams.app:main"
 ngc-cams-web = "ngc_cams_web.__main__:main"
 
 [tool.setuptools.packages.find]
