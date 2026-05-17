@@ -59,3 +59,20 @@ def test_post_add_creates_camera_and_redirects_to_index():
     assert len(stored) == 1
     assert stored[0].name == "New Cam"
     assert stored[0].rtsp_url == "rtsp://1.2.3.4/main"
+
+
+def test_post_delete_removes_camera_and_redirects():
+    app, repo = _build()
+    stored = repo.add(Camera(name="Doomed", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        response = client.post(f"/cameras/{stored.id}/delete", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
+    assert repo.list() == []
+
+
+def test_post_delete_unknown_id_returns_404():
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.post("/cameras/9999/delete", follow_redirects=False)
+    assert response.status_code == 404

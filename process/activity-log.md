@@ -72,6 +72,17 @@
 
 ## 2026-05-17
 
+### Delete-camera route (POST /cameras/{id}/delete)
+**Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
+
+- New POST handler that deletes via `CameraRepository.delete` and 303-redirects to `/`; unknown IDs raise HTTP 404 (web-pivot Task 7).
+- TestClient tests cover both the happy path (camera removed, redirect, repo empty) and the 404 case.
+
+**Deployment:** Not deployed
+**Test Results:** 79/79 passed
+
+---
+
 ### Add-camera route (POST /cameras/add)
 **Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
 

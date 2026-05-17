@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ngc_cams.models import Camera
@@ -22,4 +22,12 @@ def add_camera(
     rtsp_url: str = Form(...),
 ):
     request.app.state.cameras.add(Camera(name=name, rtsp_url=rtsp_url))
+    return RedirectResponse("/", status_code=303)
+
+
+@router.post("/cameras/{camera_id}/delete")
+def delete_camera(request: Request, camera_id: int):
+    deleted = request.app.state.cameras.delete(camera_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Camera not found")
     return RedirectResponse("/", status_code=303)
