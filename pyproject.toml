@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ngc-cams"
+version = "0.1.0"
+description = "Personal ONVIF camera manager with RTSP live view and recording."
+requires-python = ">=3.11"
+dependencies = [
+    "PyQt6>=6.7",
+    "onvif-zeep>=0.2.12",
+    "python-vlc>=3.0.20123",
+    "wsdiscovery>=2.1.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+ngc-cams = "ngc_cams.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
