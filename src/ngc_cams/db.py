@@ -1,7 +1,43 @@
 from __future__ import annotations
 
 import sqlite3
+import threading
 from pathlib import Path
+
+
+_CONNECTION_LOCKS: dict[int, threading.RLock] = {}
+_REGISTRY_LOCK = threading.Lock()
+
+
+def lock_for(connection: sqlite3.Connection) -> threading.RLock:
+    """Return the per-connection :class:`threading.RLock`, creating it on demand.
+
+    Routes (Starlette threadpool), the lifespan poller (event loop), and the
+    recording manager all share one connection with ``check_same_thread=False``;
+    multi-statement repo methods need a single lock to keep their internals
+    atomic. ``sqlite3.Connection`` is a C extension that doesn't permit
+    attribute assignment, so we keep the registry in a module-level dict keyed
+    by ``id(connection)``. The dict holds no strong reference to the connection
+    itself, but for a single-user app the connection lives for the process
+    lifetime; for tests the leak is bounded by the test count.
+
+    One lock per connection — repos that share a connection share the lock.
+    """
+    with _REGISTRY_LOCK:
+        key = id(connection)
+        lock = _CONNECTION_LOCKS.get(key)
+        if lock is None:
+            lock = threading.RLock()
+            _CONNECTION_LOCKS[key] = lock
+        return lock
+
+
+def _release_lock_for(connection: sqlite3.Connection) -> None:
+    """Drop the registry entry for ``connection``. Optional cleanup hook —
+    callers that close a connection mid-process can use this to bound the leak.
+    Tests that recycle connections call this in their teardown."""
+    with _REGISTRY_LOCK:
+        _CONNECTION_LOCKS.pop(id(connection), None)
 
 
 SCHEMA = """
@@ -37,6 +73,7 @@ def connect(db_path: Path) -> sqlite3.Connection:
     connection = sqlite3.connect(db_path, check_same_thread=False)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
+    lock_for(connection)  # attach the per-connection RLock eagerly
     return connection
 
 

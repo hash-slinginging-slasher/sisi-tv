@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Concurrency hardening: per-connection RLock around the repos
+**Files Changed:** `src/ngc_cams/db.py`, `src/ngc_cams/cameras.py`, `src/ngc_cams/segments.py`, `tests/test_db_locking.py` (new), `kanban-to.md`
+
+- New `ngc_cams.db.lock_for(connection)` returns a single `threading.RLock` per connection. Stored in a module-level dict keyed by `id(connection)` because `sqlite3.Connection` is a C type that rejects attribute assignment. `connect()` eagerly attaches a lock so production code never hits the lazy path.
+- Wrapped every method on `CameraRepository` and `SegmentRepository` in `with self._lock:` so multi-statement read-modify-write paths like `update()` (UPDATE → commit → SELECT) and `delete_older_than()` (SELECT → DELETE → commit) are atomic across threads.
+- Regression tests hammer 8 threads × 20 record-mode toggles and 6 threads × 25 segment inserts; both pass with zero exceptions and exact final counts. Plus a dedicated `lock_for` test that pins serialization on a contested read-modify-write counter.
+
+**Deployment:** Not deployed
+**Test Results:** 85/85 passed
+
+---
+
 ### Surface poller failures in the log
 **Files Changed:** `src/ngc_cams_web/composition.py`, `tests/test_web_composition.py`, `kanban-to.md`
 
