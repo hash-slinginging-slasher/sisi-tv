@@ -12,7 +12,6 @@ from ngc_cams.recording.paths import safe_camera_dir_name
 
 router = APIRouter()
 
-GRID_MAX_CELLS = 8
 DASHBOARD_FEED_LIMIT = 3
 SNAPSHOT_GALLERY_LIMIT = 12
 
@@ -65,13 +64,40 @@ def index(request: Request):
     )
 
 
+def _ordered_cameras(cameras_list, saved_order):
+    """Order `cameras_list` by `saved_order` (list of camera ids), appending any
+    cameras not in the saved order at the end. Unknown ids in saved_order are
+    skipped (camera was deleted)."""
+    by_id = {c.id: c for c in cameras_list}
+    seen: set[int] = set()
+    ordered = []
+    for cid in saved_order:
+        cam = by_id.get(cid)
+        if cam is not None and cid not in seen:
+            ordered.append(cam)
+            seen.add(cid)
+    for cam in cameras_list:
+        if cam.id not in seen:
+            ordered.append(cam)
+    return ordered
+
+
 @router.get("/grid", response_class=HTMLResponse)
 def grid(request: Request):
+    from ngc_cams import settings_store
+
     cameras = request.app.state.cameras.list()
-    visible = cameras[:GRID_MAX_CELLS]
-    hidden_count = max(0, len(cameras) - GRID_MAX_CELLS)
-    main_camera = visible[0] if visible else None
-    side_cameras = visible[1:] if len(visible) > 1 else []
+    stored = settings_store.load()
+    raw_order = stored.get("grid_order") or []
+    order = [int(x) for x in raw_order if isinstance(x, int) or str(x).isdigit()]
+    columns_raw = stored.get("grid_columns", "auto")
+    if isinstance(columns_raw, int) and 1 <= columns_raw <= 8:
+        columns = columns_raw
+    elif isinstance(columns_raw, str) and columns_raw.isdigit() and 1 <= int(columns_raw) <= 8:
+        columns = int(columns_raw)
+    else:
+        columns = "auto"
+    visible = _ordered_cameras(cameras, order)
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request,
@@ -79,12 +105,35 @@ def grid(request: Request):
         {
             "active_nav": "matrix",
             "visible": visible,
-            "main_camera": main_camera,
-            "side_cameras": side_cameras,
-            "hidden_count": hidden_count,
-            "max_cells": GRID_MAX_CELLS,
+            "columns": columns,
         },
     )
+
+
+@router.post("/grid/layout")
+async def save_grid_layout(request: Request):
+    from ngc_cams import settings_store
+
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="expected JSON object")
+    update: dict = {}
+    raw_order = body.get("order")
+    if isinstance(raw_order, list):
+        update["grid_order"] = [int(x) for x in raw_order if isinstance(x, int) or str(x).isdigit()]
+    raw_cols = body.get("columns")
+    if raw_cols == "auto":
+        update["grid_columns"] = "auto"
+    elif isinstance(raw_cols, int) and 1 <= raw_cols <= 8:
+        update["grid_columns"] = raw_cols
+    elif isinstance(raw_cols, str) and raw_cols.isdigit() and 1 <= int(raw_cols) <= 8:
+        update["grid_columns"] = int(raw_cols)
+    if not update:
+        raise HTTPException(status_code=400, detail="nothing to save")
+    existing = settings_store.load()
+    existing.update(update)
+    settings_store.save(existing)
+    return {"status": "ok", **update}
 
 
 @router.post("/cameras/add")

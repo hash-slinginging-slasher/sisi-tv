@@ -327,33 +327,81 @@ def test_post_edit_invalid_record_mode_keeps_existing():
     assert repo.get(stored.id).record_mode == RecordMode.VIDEO_AUDIO
 
 
-def test_grid_renders_live_img_for_every_camera_up_to_cap():
+def test_grid_renders_live_img_for_every_camera(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
     app, repo = _build()
     for i in range(3):
         repo.add(Camera(name=f"Cam{i}", rtsp_url=f"rtsp://x/{i}"))
     with TestClient(app) as client:
         response = client.get("/grid")
     assert response.status_code == 200
-    for i in range(1, 4):  # ids start at 1
+    for i in range(1, 4):
         assert f'/cameras/{i}/live.mjpg' in response.text
         assert f'href="/cameras/{i}"' in response.text
 
 
-def test_grid_caps_at_eight_and_shows_overflow_notice():
+def test_grid_shows_every_camera_no_cap(tmp_path, monkeypatch):
+    """The 8-cell cap was removed when the layout became user-arrangeable."""
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
     app, repo = _build()
     for i in range(10):
         repo.add(Camera(name=f"Cam{i}", rtsp_url=f"rtsp://x/{i}"))
     with TestClient(app) as client:
         response = client.get("/grid")
     assert response.status_code == 200
-    # Only the first 8 cameras have live.mjpg embeds.
-    assert response.text.count("/live.mjpg") == 8
-    # Overflow notice present.
-    assert "capped at 8" in response.text
-    assert "Showing 8 of 10" in response.text
+    assert response.text.count("/live.mjpg") == 10
 
 
-def test_grid_shows_empty_state_when_no_cameras():
+def test_grid_respects_saved_order(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(settings_store, "default_settings_path", lambda: settings_path)
+    app, repo = _build()
+    repo.add(Camera(name="First", rtsp_url="rtsp://x/1"))   # id=1
+    repo.add(Camera(name="Second", rtsp_url="rtsp://x/2"))  # id=2
+    repo.add(Camera(name="Third", rtsp_url="rtsp://x/3"))   # id=3
+    # Save an explicit order: 3, 1, 2
+    settings_store.save({"grid_order": [3, 1, 2]})
+
+    with TestClient(app) as client:
+        response = client.get("/grid")
+
+    # The data-camera-id attributes appear in DOM order, so substring index
+    # tells us the saved order took effect.
+    i3 = response.text.index('data-camera-id="3"')
+    i1 = response.text.index('data-camera-id="1"')
+    i2 = response.text.index('data-camera-id="2"')
+    assert i3 < i1 < i2
+
+
+def test_grid_appends_unsaved_cameras_at_end(tmp_path, monkeypatch):
+    """Cameras added after the order was saved go to the tail, not lost."""
+    from ngc_cams import settings_store
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(settings_store, "default_settings_path", lambda: settings_path)
+    app, repo = _build()
+    repo.add(Camera(name="A", rtsp_url="rtsp://x/1"))  # id=1
+    repo.add(Camera(name="B", rtsp_url="rtsp://x/2"))  # id=2
+    settings_store.save({"grid_order": [1]})  # only id=1 is in the saved order
+    repo.add(Camera(name="C", rtsp_url="rtsp://x/3"))  # id=3 — added after save
+
+    with TestClient(app) as client:
+        response = client.get("/grid")
+
+    i1 = response.text.index('data-camera-id="1"')
+    i2 = response.text.index('data-camera-id="2"')
+    i3 = response.text.index('data-camera-id="3"')
+    assert i1 < i2 and i1 < i3
+
+
+def test_grid_shows_empty_state_when_no_cameras(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
     app, _ = _build()
     with TestClient(app) as client:
         response = client.get("/grid")
@@ -362,7 +410,10 @@ def test_grid_shows_empty_state_when_no_cameras():
     assert "/live.mjpg" not in response.text
 
 
-def test_grid_marks_recording_cameras():
+def test_grid_marks_recording_cameras(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
     app, repo = _build()
     repo.add(Camera(name="OffCam", rtsp_url="rtsp://x/1"))
     repo.add(
@@ -371,5 +422,49 @@ def test_grid_marks_recording_cameras():
     with TestClient(app) as client:
         response = client.get("/grid")
     assert response.status_code == 200
-    # The REC badge only appears for cameras with record_mode != off.
     assert response.text.count("REC</span>") == 1
+
+
+def test_post_grid_layout_persists_order(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(settings_store, "default_settings_path", lambda: settings_path)
+    app, repo = _build()
+    repo.add(Camera(name="A", rtsp_url="rtsp://x/1"))
+    repo.add(Camera(name="B", rtsp_url="rtsp://x/2"))
+    with TestClient(app) as client:
+        response = client.post("/grid/layout", json={"order": [2, 1]})
+    assert response.status_code == 200
+    assert settings_store.load()["grid_order"] == [2, 1]
+
+
+def test_post_grid_layout_persists_columns(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    settings_path = tmp_path / "settings.json"
+    monkeypatch.setattr(settings_store, "default_settings_path", lambda: settings_path)
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.post("/grid/layout", json={"columns": 4})
+    assert response.status_code == 200
+    assert settings_store.load()["grid_columns"] == 4
+
+
+def test_post_grid_layout_accepts_auto_columns(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.post("/grid/layout", json={"columns": "auto"})
+    assert response.status_code == 200
+    assert settings_store.load()["grid_columns"] == "auto"
+
+
+def test_post_grid_layout_rejects_out_of_range_columns(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.post("/grid/layout", json={"columns": 99})
+    assert response.status_code == 400
