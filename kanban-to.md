@@ -6,15 +6,7 @@ Source of truth for what's next on the personal-app roadmap. Move cards across c
 
 ## Backlog
 
-### Out-of-process video player (deferred alternative)
-Could keep Qt but isolate libvlc in a separate child process for crash resilience — ODM uses this pattern (`odm.player.host.exe` separate from the main WPF app). Defer unless the web pivot stalls; web naturally provides the same isolation (browser is the "player host").
-
-### Grid view of multiple cameras
-A CSS grid of `<img src="/cameras/N/live.mjpg">` elements showing every camera at once; clicking a cell promotes it to the single-camera detail page.
-
-- **Touches:** new `GET /grid` route + template; cap at 8 cells (PRD limit) and warn if more cameras than cells.
-- **Open questions:** 2×2 default scaling up to 3×3? Browser tab close releases the MJPEG fetches automatically (no manual teardown).
-- **Done when:** `/grid` renders every active camera's MJPEG feed side-by-side; clicking a tile navigates to that camera's detail page.
+_empty_
 
 ---
 
@@ -26,6 +18,8 @@ _empty_
 
 ## Done
 
+- **2026-05-17** — Grid view at `GET /grid`. Responsive CSS grid of `<img src="/cameras/N/live.mjpg">` wrapped in `<a href="/cameras/N">` so clicking promotes to the detail page. Capped at 8 cells per PRD; if more cameras exist the page shows a "Showing 8 of N (capped at 8)" notice. Each tile shows the camera name and a `REC` badge when `record_mode != off`. Index page now has a "View grid →" link. 4 new tests, 114/114, ruff clean.
+- **2026-05-17** — Closed: "Out-of-process video player (deferred alternative)" — the web pivot supplies the same crash-isolation (browser is the "player host"), the card was explicitly deferred to this case.
 - **2026-05-17** — PTZ controls. New `ngc_cams.onvif.ptz.PTZService` wraps ONVIF `ContinuousMove` / `Stop` with an injectable `onvif_factory` for tests; covers up/down/left/right/zoom_in/zoom_out via a fixed velocity table. `POST /cameras/{id}/ptz/{direction}` + `POST /cameras/{id}/ptz/stop` routes drive it (404 unknown camera, 409 PTZ-disabled, 422 bad direction, 502 ONVIF error). `camera_detail.html` renders a 3x3 directional pad with mousedown/touchstart → move and mouseup/mouseleave/touchend → stop. Add-camera form gained a PTZ checkbox. 21 new tests, 110/110, ruff clean.
 - **2026-05-17** — Disk guard wired into `RecordingManager.start()`. New `disk_guard_free_gb` + `disk_usage_fn` ctor args; `__main__.py` passes `config.disk_guard_free_gb`. When free space drops below the threshold, `start()` skips the ffmpeg spawn (transient — *not* added to `_failed_camera_ids`) and logs a one-shot warning; when disk recovers, logs a recovery info line and resumes. Five new tests cover low-disk block, log-once behaviour, recovery resume, guard-disabled, and fail-open on `shutil.disk_usage` errors. 90/90 tests, ruff clean.
 - **2026-05-17** — Concurrency hardening: per-connection `threading.RLock` around every `CameraRepository` / `SegmentRepository` method. New `ngc_cams.db.lock_for(connection)` returns the same `RLock` for every caller sharing one connection; the registry is a module-level dict keyed by `id(connection)` because `sqlite3.Connection` is a C type that doesn't accept attribute assignment. Concurrency regression tests hammer 8 threads × 20 record-mode toggles and 6 threads × 25 segment inserts with no exceptions and exact final counts. 85/85 tests, ruff clean.

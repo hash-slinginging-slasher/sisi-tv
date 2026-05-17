@@ -139,3 +139,51 @@ def test_get_camera_detail_returns_404_for_unknown_id():
     with TestClient(app) as client:
         response = client.get("/cameras/9999")
     assert response.status_code == 404
+
+
+def test_grid_renders_live_img_for_every_camera_up_to_cap():
+    app, repo = _build()
+    for i in range(3):
+        repo.add(Camera(name=f"Cam{i}", rtsp_url=f"rtsp://x/{i}"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    for i in range(1, 4):  # ids start at 1
+        assert f'/cameras/{i}/live.mjpg' in response.text
+        assert f'href="/cameras/{i}"' in response.text
+
+
+def test_grid_caps_at_eight_and_shows_overflow_notice():
+    app, repo = _build()
+    for i in range(10):
+        repo.add(Camera(name=f"Cam{i}", rtsp_url=f"rtsp://x/{i}"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    # Only the first 8 cameras have live.mjpg embeds.
+    assert response.text.count("/live.mjpg") == 8
+    # Overflow notice present.
+    assert "capped at 8" in response.text
+    assert "Showing 8 of 10" in response.text
+
+
+def test_grid_shows_empty_state_when_no_cameras():
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    assert "No cameras yet" in response.text
+    assert "/live.mjpg" not in response.text
+
+
+def test_grid_marks_recording_cameras():
+    app, repo = _build()
+    repo.add(Camera(name="OffCam", rtsp_url="rtsp://x/1"))
+    repo.add(
+        Camera(name="RecCam", rtsp_url="rtsp://x/2", record_mode=RecordMode.VIDEO_ONLY)
+    )
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    # The REC badge only appears for cameras with record_mode != off.
+    assert response.text.count("REC</span>") == 1

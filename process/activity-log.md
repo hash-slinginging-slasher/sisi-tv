@@ -72,6 +72,19 @@
 
 ## 2026-05-17
 
+### Grid view (GET /grid) + close out-of-process player card
+**Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/grid.html` (new), `src/ngc_cams_web/templates/index.html`, `tests/test_web_cameras.py`, `kanban-to.md`
+
+- New `GET /grid` route in `routes.cameras`. Renders the first `GRID_MAX_CELLS = 8` cameras as a responsive CSS grid (`grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))`) of `<img src="/cameras/N/live.mjpg">` wrapped in `<a href="/cameras/N">` so clicking promotes to the detail page. Each tile labels the camera name and shows a `REC` badge when `record_mode != off`. Overflow notice ("Showing 8 of N (capped at 8)") when more than 8 cameras exist; empty-state ("No cameras yet") when none.
+- Index page gained a "View grid →" link.
+- Four new tests in `test_web_cameras.py`: tile/link rendering, 8-cap + overflow notice, empty state, REC badge selectivity.
+- Closed the "Out-of-process video player (deferred alternative)" Backlog card. Its own note already deferred it to "unless the web pivot stalls"; the pivot landed and the browser supplies the same crash-isolation (each MJPEG `<img>` is one TCP connection — a router-side ffmpeg crash kills only its own response).
+
+**Deployment:** Not deployed
+**Test Results:** 114/114 passed
+
+---
+
 ### PTZ controls on the camera detail page
 **Files Changed:** `src/ngc_cams/onvif/ptz.py` (new), `src/ngc_cams_web/routes/ptz.py` (new), `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/camera_detail.html`, `tests/test_ptz.py` (new), `tests/test_web_ptz.py` (new), `kanban-to.md`
 

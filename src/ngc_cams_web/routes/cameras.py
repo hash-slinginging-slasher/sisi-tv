@@ -9,12 +9,27 @@ from ngc_cams.models import Camera, RecordMode
 
 router = APIRouter()
 
+GRID_MAX_CELLS = 8
+
 
 @router.get("/", response_class=HTMLResponse)
 def index(request: Request):
     cameras = request.app.state.cameras.list()
     templates = request.app.state.templates
     return templates.TemplateResponse(request, "index.html", {"cameras": cameras})
+
+
+@router.get("/grid", response_class=HTMLResponse)
+def grid(request: Request):
+    cameras = request.app.state.cameras.list()
+    visible = cameras[:GRID_MAX_CELLS]
+    hidden_count = max(0, len(cameras) - GRID_MAX_CELLS)
+    templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request,
+        "grid.html",
+        {"visible": visible, "hidden_count": hidden_count, "max_cells": GRID_MAX_CELLS},
+    )
 
 
 @router.post("/cameras/add")
