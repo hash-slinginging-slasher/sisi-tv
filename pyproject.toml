@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ngc-cams"
+name = "sisi-tv"
 version = "0.1.0"
-description = "Personal ONVIF camera manager with RTSP live view and recording."
+description = "SISI-TV — personal ONVIF camera manager with RTSP live view and recording."
 requires-python = ">=3.11"
 dependencies = [
     "onvif-zeep>=0.2.12",
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [project.scripts]
-ngc-cams-web = "ngc_cams_web.__main__:main"
+sisi-tv = "ngc_cams_web.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

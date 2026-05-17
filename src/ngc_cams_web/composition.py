@@ -107,7 +107,7 @@ def build_app(
         if recording_manager is not None and lifespan_poll_seconds is not None
         else None
     )
-    app = FastAPI(title="ngc-cams", lifespan=lifespan)
+    app = FastAPI(title="SISI-TV", lifespan=lifespan)
     app.state.cameras = cameras
     app.state.discovery = discovery
     app.state.recording_manager = recording_manager

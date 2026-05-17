@@ -72,6 +72,20 @@
 
 ## 2026-05-17
 
+### Rename app to SISI-TV (display-only)
+**Files Changed:** `pyproject.toml`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/templates/base.html`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/camera_detail.html`, `src/ngc_cams_web/templates/grid.html`, `src/ngc_cams_web/templates/settings.html`
+
+- Project name and description in `pyproject.toml`: `ngc-cams` → `sisi-tv`. Console script renamed from `ngc-cams-web` → `sisi-tv`. Entry point still resolves to `ngc_cams_web.__main__:main`.
+- `FastAPI(title=...)` and template chrome (page titles, header `<h1>`, Restart-required banner copy) say SISI-TV.
+- README, CLAUDE.md, AGENTS.md describe the app as SISI-TV with a note that internal Python packages keep the `ngc_cams` / `ngc_cams_web` names so existing recordings under `D:\ngc-cams-recordings\` and saved settings at `~/.ngc-cams/settings.json` aren't orphaned.
+- Old `ngc-cams-web.exe` shim is locked by a running smoke-test instance (PID 39912) and can be removed later by stopping it and running `pip uninstall -y ngc-cams`. Both shims coexist harmlessly until then.
+- 129/129 tests still pass — internal package names unchanged so imports + tests are unaffected.
+
+**Deployment:** Not deployed
+**Test Results:** 129/129 passed
+
+---
+
 ### Settings page (GET/POST /settings) — configurable recording paths
 **Files Changed:** `src/ngc_cams/settings_store.py` (new), `src/ngc_cams/config.py`, `src/ngc_cams_web/routes/settings.py` (new), `src/ngc_cams_web/templates/settings.html` (new), `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_settings_store.py` (new), `tests/test_web_settings.py` (new)
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`ngc-cams` (ONVIF Camera Manager) is a single-user Windows desktop app for ONVIF discovery, RTSP live view, PTZ, and continuous recording. The authoritative scope and rationale lives in `odm-replacement-prd_1.md` — consult it before adding features or pushing back on requirements. `AGENTS.md` carries the repository conventions and is binding.
+SISI-TV is a single-user Windows app for ONVIF discovery, RTSP live view, PTZ, and continuous recording (formerly `ngc-cams` — Python packages are still named `ngc_cams` / `ngc_cams_web` internally; user-facing rename only). The authoritative scope and rationale lives in `odm-replacement-prd_1.md` — consult it before adding features or pushing back on requirements. `AGENTS.md` carries the repository conventions and is binding.
 
 ## Commands
 
@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-ngc-cams-web              # launch the web app on 127.0.0.1:8000
+sisi-tv                   # launch the web app on 127.0.0.1:8000
 pytest                    # run the whole suite
 pytest tests/test_db.py::test_initialize_creates_core_tables   # single test
 ruff check .              # lint (configured in pyproject.toml, line-length 100)
@@ -24,7 +24,7 @@ If a globally installed pytest plugin breaks collection, disable autoload:
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; python -m pytest
 ```
 
-Packaging target (not yet committed): `pyinstaller ngc-cams.spec` produces the portable `.exe`.
+Packaging target (not yet committed): `pyinstaller sisi-tv.spec` produces the portable `.exe`.
 
 ## Architecture
 

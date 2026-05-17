@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository currently contains the product requirements document `odm-replacement-prd_1.md` for the `ngc-cams` ONVIF camera manager. Keep planning documents at the repository root until implementation begins.
+This repository hosts SISI-TV (formerly `ngc-cams`), a single-user ONVIF camera manager. Python packages remain `ngc_cams` / `ngc_cams_web` internally; the rename is user-facing only. Product scope lives in `odm-replacement-prd_1.md`.
 
 Python application layout:
 
@@ -21,8 +21,8 @@ No build system is committed yet. Once implementation starts, prefer these comma
 - `.venv\Scripts\Activate.ps1` activates it on Windows PowerShell.
 - `pip install -e ".[dev]"` installs the package and development dependencies.
 - `pytest` runs the test suite.
-- `ngc-cams-web` launches the FastAPI web UI on `127.0.0.1:8000` and opens the default browser.
-- `pyinstaller ngc-cams.spec` builds the portable Windows executable (not yet committed).
+- `sisi-tv` launches the FastAPI web UI on `127.0.0.1:8000` and opens the default browser.
+- `pyinstaller sisi-tv.spec` builds the portable Windows executable (not yet committed).
 
 ## Coding Style & Naming Conventions
 
