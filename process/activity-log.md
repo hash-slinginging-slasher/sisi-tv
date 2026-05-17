@@ -72,6 +72,19 @@
 
 ## 2026-05-17
 
+### Disk guard for `RecordingManager.start()`
+**Files Changed:** `src/ngc_cams/recording/manager.py`, `src/ngc_cams_web/__main__.py`, `tests/test_recording_manager.py`, `kanban-to.md`
+
+- `RecordingManager.__init__` gains `disk_guard_free_gb: int | None = None` and `disk_usage_fn: Callable[[Path], Any] = shutil.disk_usage`. `__main__.py` plumbs `config.disk_guard_free_gb` so production starts with the existing 10 GB default.
+- New `_has_disk_headroom()` helper: `mkdir(parents=True, exist_ok=True)` on `recording_root` first (so the disk-usage call works on first run), then compare `usage.free` to `disk_guard_free_gb * 1_000_000_000`. Returns `True` (fail-open) when the guard is `None` or the check raises `OSError` — never block recording because we couldn't read the disk.
+- `start()` now consults the guard before resolving ffmpeg. Low-disk path is **transient** (no `_failed_camera_ids` entry) so the next `apply_modes` tick retries once retention has freed space. A boolean `_disk_low_warned` flag throttles the warning to one log line per low-disk episode; transitioning back to healthy emits one `info` line.
+- Five new tests in `test_recording_manager.py`: low-disk blocks spawn, log-once across repeated `start()` calls, recovery resumes + emits recovery info, guard disabled when threshold is `None`, fail-open when `disk_usage_fn` raises `OSError`.
+
+**Deployment:** Not deployed
+**Test Results:** 90/90 passed
+
+---
+
 ### Concurrency hardening: per-connection RLock around the repos
 **Files Changed:** `src/ngc_cams/db.py`, `src/ngc_cams/cameras.py`, `src/ngc_cams/segments.py`, `tests/test_db_locking.py` (new), `kanban-to.md`
 

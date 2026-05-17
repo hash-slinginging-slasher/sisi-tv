@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import signal
 import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from ngc_cams.cameras import CameraRepository
 from ngc_cams.models import RecordMode, StoredCamera
@@ -15,6 +16,8 @@ from ngc_cams.recording.ffmpeg import build_segment_command
 from ngc_cams.recording.locator import find_ffmpeg_executable
 from ngc_cams.recording.paths import segment_output_pattern
 from ngc_cams.segments import SegmentRepository
+
+_BYTES_PER_GB = 1_000_000_000
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +72,8 @@ class RecordingManager:
         popen_factory: Callable[..., object] = subprocess.Popen,
         clock: Callable[[], datetime] = datetime.now,
         ffmpeg_resolver: Callable[[], str | None] = find_ffmpeg_executable,
+        disk_guard_free_gb: int | None = None,
+        disk_usage_fn: Callable[[Path], Any] = shutil.disk_usage,
     ) -> None:
         self._cameras = cameras
         self._segments = segments
@@ -77,6 +82,8 @@ class RecordingManager:
         self._popen_factory = popen_factory
         self._clock = clock
         self._ffmpeg_resolver = ffmpeg_resolver
+        self._disk_guard_free_gb = disk_guard_free_gb
+        self._disk_usage_fn = disk_usage_fn
         self._recordings: dict[int, _Recording] = {}
         # Cameras that failed to spawn this session; we don't retry them on every
         # poll/apply_modes — restarting the app gives the user a chance to fix it.
@@ -85,6 +92,30 @@ class RecordingManager:
         # so the UI thread never blocks waiting on ffmpeg.
         self._stopping: list[_Stopping] = []
         self.ffmpeg_missing: bool = False
+        # One-shot warning when disk falls below the guard threshold; we re-arm
+        # it after disk recovers so the log doesn't fill with the same line
+        # every apply_modes tick.
+        self._disk_low_warned: bool = False
+
+    def _has_disk_headroom(self) -> bool:
+        """True iff free space on the recording root meets ``disk_guard_free_gb``.
+
+        Returns ``True`` when the guard is disabled (``None``) or when the
+        free-space check can't be performed — never block recording because we
+        couldn't read the disk.
+        """
+        if self._disk_guard_free_gb is None:
+            return True
+        try:
+            self._recording_root.mkdir(parents=True, exist_ok=True)
+            usage = self._disk_usage_fn(self._recording_root)
+        except OSError:
+            return True
+        try:
+            free_bytes = usage.free
+        except AttributeError:
+            return True
+        return free_bytes >= self._disk_guard_free_gb * _BYTES_PER_GB
 
     def ffmpeg_available(self) -> bool:
         """True iff an ``ffmpeg`` executable can be resolved on PATH."""
@@ -100,6 +131,23 @@ class RecordingManager:
             return
         if camera.record_mode == RecordMode.OFF:
             raise ValueError("Cannot start recording for a camera in OFF mode.")
+        if not self._has_disk_headroom():
+            if not self._disk_low_warned:
+                logger.warning(
+                    "Free disk under %s GB on %s; pausing new recording spawns "
+                    "until retention catches up.",
+                    self._disk_guard_free_gb,
+                    self._recording_root,
+                )
+                self._disk_low_warned = True
+            return
+        if self._disk_low_warned:
+            logger.info(
+                "Free disk recovered above %s GB on %s; resuming recording spawns.",
+                self._disk_guard_free_gb,
+                self._recording_root,
+            )
+            self._disk_low_warned = False
         ffmpeg_path = self._ffmpeg_resolver()
         if ffmpeg_path is None:
             self.ffmpeg_missing = True

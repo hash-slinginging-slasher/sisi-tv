@@ -28,6 +28,7 @@ def main() -> int:
         segments,
         recording_root=config.recording_root,
         segment_seconds=config.segment_seconds,
+        disk_guard_free_gb=config.disk_guard_free_gb,
     )
 
     app = build_app(

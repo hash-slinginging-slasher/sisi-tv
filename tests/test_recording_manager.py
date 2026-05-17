@@ -396,3 +396,145 @@ def test_poll_restarts_crashed_process_after_backoff(tmp_path, cameras_repo, seg
     manager.poll()
     assert len(factory.processes) == 2  # restarted
     assert manager.is_recording(camera.id)
+
+
+class _FakeDiskUsage:
+    def __init__(self, free_bytes: int) -> None:
+        self.total = 100 * 1_000_000_000
+        self.used = self.total - free_bytes
+        self.free = free_bytes
+
+
+def test_disk_guard_blocks_start_when_free_below_threshold(
+    tmp_path, cameras_repo, segments_repo, caplog
+):
+    factory = FakeFactory()
+    # 5 GB free, guard says require 10 GB
+    disk_calls: list[Path] = []
+
+    def fake_disk_usage(path: Path) -> _FakeDiskUsage:
+        disk_calls.append(path)
+        return _FakeDiskUsage(free_bytes=5 * 1_000_000_000)
+
+    manager = RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        ffmpeg_resolver=lambda: "ffmpeg",
+        disk_guard_free_gb=10,
+        disk_usage_fn=fake_disk_usage,
+    )
+    camera = _add(cameras_repo)
+
+    import logging as _logging
+    with caplog.at_level(_logging.WARNING, logger="ngc_cams.recording.manager"):
+        manager.start(camera)
+
+    assert factory.processes == []
+    assert not manager.is_recording(camera.id)
+    assert camera.id not in manager._failed_camera_ids  # transient, not permanent
+    assert disk_calls == [tmp_path]
+    assert any(
+        "Free disk under 10 GB" in record.message for record in caplog.records
+    )
+
+
+def test_disk_guard_logs_low_disk_warning_only_once(
+    tmp_path, cameras_repo, segments_repo, caplog
+):
+    factory = FakeFactory()
+    manager = RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        ffmpeg_resolver=lambda: "ffmpeg",
+        disk_guard_free_gb=10,
+        disk_usage_fn=lambda _: _FakeDiskUsage(free_bytes=1 * 1_000_000_000),
+    )
+    camera = _add(cameras_repo)
+
+    import logging as _logging
+    with caplog.at_level(_logging.WARNING, logger="ngc_cams.recording.manager"):
+        manager.start(camera)
+        manager.start(camera)
+        manager.start(camera)
+
+    low_warnings = [
+        record for record in caplog.records if "Free disk under" in record.message
+    ]
+    assert len(low_warnings) == 1, "warning should fire once per low-disk episode"
+
+
+def test_disk_guard_resumes_and_logs_recovery_when_disk_returns(
+    tmp_path, cameras_repo, segments_repo, caplog
+):
+    factory = FakeFactory()
+    free_holder = [1 * 1_000_000_000]  # start low
+
+    manager = RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        ffmpeg_resolver=lambda: "ffmpeg",
+        disk_guard_free_gb=10,
+        disk_usage_fn=lambda _: _FakeDiskUsage(free_bytes=free_holder[0]),
+    )
+    camera = _add(cameras_repo)
+
+    import logging as _logging
+    with caplog.at_level(_logging.INFO, logger="ngc_cams.recording.manager"):
+        manager.start(camera)  # blocked
+        assert factory.processes == []
+        free_holder[0] = 50 * 1_000_000_000  # disk recovered
+        manager.start(camera)  # should spawn now
+
+    assert len(factory.processes) == 1
+    assert manager.is_recording(camera.id)
+    assert any(
+        "Free disk recovered" in record.message for record in caplog.records
+    )
+
+
+def test_disk_guard_disabled_when_threshold_none(
+    tmp_path, cameras_repo, segments_repo
+):
+    factory = FakeFactory()
+    # Even a "0 free" disk shouldn't block when guard is None.
+    manager = RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        ffmpeg_resolver=lambda: "ffmpeg",
+        disk_guard_free_gb=None,
+        disk_usage_fn=lambda _: _FakeDiskUsage(free_bytes=0),
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    assert len(factory.processes) == 1
+
+
+def test_disk_guard_does_not_block_when_disk_usage_call_fails(
+    tmp_path, cameras_repo, segments_repo
+):
+    factory = FakeFactory()
+
+    def failing(_path: Path) -> _FakeDiskUsage:
+        raise OSError("disk gone")
+
+    manager = RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        ffmpeg_resolver=lambda: "ffmpeg",
+        disk_guard_free_gb=10,
+        disk_usage_fn=failing,
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    # Fail-open: if we can't check, don't block recording.
+    assert len(factory.processes) == 1

@@ -6,12 +6,6 @@ Source of truth for what's next on the personal-app roadmap. Move cards across c
 
 ## Backlog
 
-### Disk guard for `AppConfig.disk_guard_free_gb`
-Retention pruning landed but the disk-guard half of the original card didn't: when free disk under the configured threshold, new segment writes should pause until pruning catches up. Live view should continue regardless.
-
-- **Touches:** `src/ngc_cams/recording/manager.py` — check free space before spawning each ffmpeg in `start()`; if below threshold, log a warning and skip (manager already has a `_failed_camera_ids` pattern for similar one-shot opt-outs). Or hold off in `apply_modes()` until free space recovers. Pull the check into a tiny helper for testing (`shutil.disk_usage`).
-- **Done when:** Simulating low free space (mock `shutil.disk_usage`) prevents new ffmpeg spawns, and recovering free space resumes recording on the next `apply_modes` tick.
-
 ### Out-of-process video player (deferred alternative)
 Could keep Qt but isolate libvlc in a separate child process for crash resilience — ODM uses this pattern (`odm.player.host.exe` separate from the main WPF app). Defer unless the web pivot stalls; web naturally provides the same isolation (browser is the "player host").
 
@@ -39,6 +33,7 @@ _empty_
 
 ## Done
 
+- **2026-05-17** — Disk guard wired into `RecordingManager.start()`. New `disk_guard_free_gb` + `disk_usage_fn` ctor args; `__main__.py` passes `config.disk_guard_free_gb`. When free space drops below the threshold, `start()` skips the ffmpeg spawn (transient — *not* added to `_failed_camera_ids`) and logs a one-shot warning; when disk recovers, logs a recovery info line and resumes. Five new tests cover low-disk block, log-once behaviour, recovery resume, guard-disabled, and fail-open on `shutil.disk_usage` errors. 90/90 tests, ruff clean.
 - **2026-05-17** — Concurrency hardening: per-connection `threading.RLock` around every `CameraRepository` / `SegmentRepository` method. New `ngc_cams.db.lock_for(connection)` returns the same `RLock` for every caller sharing one connection; the registry is a module-level dict keyed by `id(connection)` because `sqlite3.Connection` is a C type that doesn't accept attribute assignment. Concurrency regression tests hammer 8 threads × 20 record-mode toggles and 6 threads × 25 segment inserts with no exceptions and exact final counts. 85/85 tests, ruff clean.
 - **2026-05-17** — Surface poller failures in the log. Replaced the bare `pass` on `recording_manager.poll()` / `stop_all()` failures with `logger.exception("recording poll tick failed")` and `... stop_all failed` so uvicorn's stderr captures the traceback. Regression test wires a `_FlakyRecordingManager` that raises on tick 1, asserts the message is logged with `exc_info`, and that the poller keeps ticking. 80/80 tests, ruff clean.
 - **2026-05-17** — Retention pruning in the lifespan. `SegmentRepository.delete_older_than` + new `ngc_cams.recording.retention.prune_all` use each camera's `retention_days` to remove old `recording_segments` rows and unlink the matching `.mp4` files. Wired into the FastAPI lifespan on a 5-minute cadence next to the existing 1-s recording-manager poller. 79/79 tests, ruff clean.
