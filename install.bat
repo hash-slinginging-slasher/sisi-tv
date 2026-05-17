@@ -102,31 +102,61 @@ goto :startup
 
 :startup
 REM --- 6. Auto-start on login ----------------------------------------------
+REM We drop two .cmd stubs directly into the per-user Startup folder. No
+REM PowerShell, no .lnk indirection -- each step ends with an `if exist`
+REM check so you can see in the install log whether the file is really there.
+
+set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
+set "STARTUP_SERVER=%STARTUP_DIR%\SISI-TV.cmd"
+set "STARTUP_VIEWER=%STARTUP_DIR%\SISI-TV Viewer.cmd"
+
 echo.
-echo Creating Startup-folder shortcut so SISI-TV launches at login ...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-startup-shortcut.ps1"
-if errorlevel 1 (
-    echo [WARN] Could not create the autostart shortcut. You can re-run
-    echo        scripts\create-startup-shortcut.ps1 manually later, or skip
-    echo        autostart entirely.
+if not exist "%STARTUP_DIR%" (
+    echo [WARN] Startup folder does not exist: %STARTUP_DIR%
+    echo        Skipping autostart configuration.
+    goto :done
+)
+
+REM Remove any legacy .lnk shortcuts from previous PowerShell-based installs.
+del "%STARTUP_DIR%\SISI-TV.lnk" >nul 2>&1
+del "%STARTUP_DIR%\SISI-TV Viewer.lnk" >nul 2>&1
+
+echo Writing server autostart stub to:
+echo        %STARTUP_SERVER%
+(
+    echo @echo off
+    echo cd /d "%~dp0"
+    echo call "%~dp0start.bat"
+) > "%STARTUP_SERVER%"
+if exist "%STARTUP_SERVER%" (
+    echo [ OK ] Server autostart created. Each login will git pull + launch SISI-TV.
 ) else (
-    echo [ OK ] Autostart configured: each login will git pull and launch SISI-TV.
+    echo [FAIL] Could not create %STARTUP_SERVER%.
 )
 
 REM --- 7. Auto-start the fullscreen viewer (only if pywebview installed) ---
 echo.
 if "%VIEWER_INSTALLED%"=="1" (
-    echo Creating Startup-folder shortcut for the fullscreen viewer ...
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-viewer-startup-shortcut.ps1"
-    if errorlevel 1 (
-        echo [WARN] Could not create the viewer autostart shortcut. You can re-run
-        echo        scripts\create-viewer-startup-shortcut.ps1 manually later.
+    echo Writing viewer autostart stub to:
+    echo        %STARTUP_VIEWER%
+    (
+        echo @echo off
+        echo cd /d "%~dp0"
+        echo start "" /min "%~dp0.venv\Scripts\sisi-tv-viewer.exe"
+    ) > "%STARTUP_VIEWER%"
+    if exist "%STARTUP_VIEWER%" (
+        echo [ OK ] Viewer autostart created. Each login opens /grid fullscreen.
     ) else (
-        echo [ OK ] Viewer autostart configured: each login opens /grid fullscreen.
+        echo [FAIL] Could not create %STARTUP_VIEWER%.
     )
 ) else (
+    del "%STARTUP_VIEWER%" >nul 2>&1
     echo [SKIP] Viewer extra not installed; not creating the kiosk shortcut.
 )
+
+echo.
+echo Startup folder contents:
+dir /b "%STARTUP_DIR%" 2>nul
 goto :done
 
 :done
@@ -135,10 +165,10 @@ echo ============================================
 echo   Install complete.
 echo ============================================
 echo.
-echo Auto-start: SISI-TV.lnk and SISI-TV Viewer.lnk are in your Startup
-echo folder, so the next login will git pull + launch the server and
-echo open the /grid page fullscreen. To disable either, delete the
-echo shortcut from shell:startup (paste in Win+R).
+echo Auto-start: SISI-TV.cmd and (if pywebview installed) SISI-TV Viewer.cmd
+echo are in shell:startup, so the next login will git pull + launch the
+echo server and open the /grid page fullscreen. To disable either,
+echo delete the .cmd from shell:startup (paste in Win+R).
 echo.
 echo Launching SISI-TV in a new window ...
 start "SISI-TV" "%~dp0.venv\Scripts\sisi-tv.exe"

@@ -1,5 +1,18 @@
 ## 2026-05-18
 
+### Drop PowerShell shortcut layer; write Startup .cmd stubs directly
+**Files Changed:** `install.bat`, `scripts/create-startup-shortcut.ps1` (deleted), `scripts/create-viewer-startup-shortcut.ps1` (deleted)
+
+- Replaced the two `powershell -File ...ps1` calls with cmd-only stub generation that writes `SISI-TV.cmd` and `SISI-TV Viewer.cmd` directly into `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\`. Removes one layer (PS execution policy, `[Environment]::GetFolderPath` quirks, .lnk via WScript.Shell COM) and gives a path you can read in the install log.
+- Each step ends with an explicit `if exist "%STARTUP_X%"` check that prints `[ OK ]` or `[FAIL]` — no more guessing whether the shortcut was created.
+- Final step prints `dir /b` of the Startup folder so the install output ends with proof of what's actually there.
+- Cleans up any legacy `SISI-TV.lnk` / `SISI-TV Viewer.lnk` from earlier PS-based installs so re-running install.bat after the upgrade doesn't leave duplicate entries.
+
+**Deployment:** Not deployed
+**Test Results:** Not run.
+
+---
+
 ### Make pywebview viewer an optional extra
 **Files Changed:** `pyproject.toml`, `install.bat`
 
