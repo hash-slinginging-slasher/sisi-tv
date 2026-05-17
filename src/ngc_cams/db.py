@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS cameras (
     record_mode TEXT NOT NULL DEFAULT 'off'
         CHECK (record_mode IN ('off', 'video_only', 'video_audio')),
     retention_days INTEGER NOT NULL DEFAULT 7,
+    display_rotation INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -79,4 +80,14 @@ def connect(db_path: Path) -> sqlite3.Connection:
 
 def initialize(connection: sqlite3.Connection) -> None:
     connection.executescript(SCHEMA)
+    # Lightweight migration: add columns that were introduced after the
+    # initial schema. SQLite's CREATE TABLE IF NOT EXISTS won't add new
+    # columns to a pre-existing table.
+    existing_columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(cameras)").fetchall()
+    }
+    if "display_rotation" not in existing_columns:
+        connection.execute(
+            "ALTER TABLE cameras ADD COLUMN display_rotation INTEGER NOT NULL DEFAULT 0"
+        )
     connection.commit()

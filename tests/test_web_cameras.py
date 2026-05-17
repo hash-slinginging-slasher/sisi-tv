@@ -309,6 +309,42 @@ def test_post_edit_does_not_stop_when_rtsp_unchanged():
     assert spy.apply_modes_calls == 1
 
 
+def test_post_edit_persists_display_rotation():
+    app, repo, _ = _build_with_manager()
+    stored = repo.add(Camera(name="x", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={"name": "x", "rtsp_url": "rtsp://x/main", "display_rotation": "180"},
+            follow_redirects=False,
+        )
+    assert repo.get(stored.id).display_rotation == 180
+
+
+def test_post_edit_rejects_unknown_rotation_keeps_existing():
+    app, repo, _ = _build_with_manager()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/main", display_rotation=90)
+    )
+    with TestClient(app) as client:
+        client.post(
+            f"/cameras/{stored.id}/edit",
+            data={"name": "x", "rtsp_url": "rtsp://x/main", "display_rotation": "45"},
+            follow_redirects=False,
+        )
+    assert repo.get(stored.id).display_rotation == 90
+
+
+def test_camera_detail_applies_rotation_transform():
+    app, repo = _build()
+    stored = repo.add(
+        Camera(name="x", rtsp_url="rtsp://x/main", display_rotation=270)
+    )
+    with TestClient(app) as client:
+        response = client.get(f"/cameras/{stored.id}")
+    assert "transform: rotate(270deg)" in response.text
+
+
 def test_post_edit_invalid_record_mode_keeps_existing():
     app, repo, _ = _build_with_manager()
     stored = repo.add(

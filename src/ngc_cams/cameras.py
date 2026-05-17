@@ -17,9 +17,9 @@ class CameraRepository:
                 """
                 INSERT INTO cameras (
                     name, rtsp_url, username, password, sub_stream_url,
-                    ptz_enabled, record_mode, retention_days
+                    ptz_enabled, record_mode, retention_days, display_rotation
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     camera.name,
@@ -30,6 +30,7 @@ class CameraRepository:
                     int(camera.ptz_enabled),
                     camera.record_mode.value,
                     camera.retention_days,
+                    int(camera.display_rotation),
                 ),
             )
             self._connection.commit()
@@ -40,7 +41,7 @@ class CameraRepository:
             rows = self._connection.execute(
                 """
                 SELECT id, name, rtsp_url, username, password, sub_stream_url,
-                       ptz_enabled, record_mode, retention_days
+                       ptz_enabled, record_mode, retention_days, display_rotation
                 FROM cameras
                 ORDER BY name COLLATE NOCASE
                 """
@@ -52,7 +53,7 @@ class CameraRepository:
             row = self._connection.execute(
                 """
                 SELECT id, name, rtsp_url, username, password, sub_stream_url,
-                       ptz_enabled, record_mode, retention_days
+                       ptz_enabled, record_mode, retention_days, display_rotation
                 FROM cameras
                 WHERE id = ?
                 """,
@@ -73,6 +74,7 @@ class CameraRepository:
                     ptz_enabled = ?,
                     record_mode = ?,
                     retention_days = ?,
+                    display_rotation = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """,
@@ -85,6 +87,7 @@ class CameraRepository:
                     int(camera.ptz_enabled),
                     camera.record_mode.value,
                     camera.retention_days,
+                    int(camera.display_rotation),
                     camera_id,
                 ),
             )
@@ -114,4 +117,5 @@ class CameraRepository:
             ptz_enabled=bool(row["ptz_enabled"]),
             record_mode=RecordMode(row["record_mode"]),
             retention_days=row["retention_days"],
+            display_rotation=int(row["display_rotation"] or 0),
         )

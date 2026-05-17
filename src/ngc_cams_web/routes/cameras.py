@@ -206,6 +206,7 @@ def edit_camera(
     rtsp_url: str = Form(...),
     record_mode: str = Form(default=""),
     ptz_enabled: str | None = Form(default=None),
+    display_rotation: str = Form(default="0"),
 ):
     repo = request.app.state.cameras
     stored = repo.get(camera_id)
@@ -215,6 +216,12 @@ def edit_camera(
         next_mode = RecordMode(record_mode) if record_mode else stored.record_mode
     except ValueError:
         next_mode = stored.record_mode
+    try:
+        rotation = int(display_rotation)
+        if rotation not in (0, 90, 180, 270):
+            rotation = stored.display_rotation
+    except ValueError:
+        rotation = stored.display_rotation
     rtsp_changed = stored.rtsp_url != rtsp_url.strip()
     updated = replace(
         stored,
@@ -222,6 +229,7 @@ def edit_camera(
         rtsp_url=rtsp_url.strip(),
         ptz_enabled=bool(ptz_enabled),
         record_mode=next_mode,
+        display_rotation=rotation,
     )
     repo.update(camera_id, updated)
     manager = request.app.state.recording_manager

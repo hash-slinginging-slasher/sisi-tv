@@ -43,6 +43,18 @@
             </select>
         </label>
 
+        <label class="block">
+            <span class="nav-label text-on-surface-variant">Display rotation (live view + snapshots only — saved MP4s stay in original orientation)</span>
+            <select name="display_rotation"
+                    class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none">
+                {% for deg in [0, 90, 180, 270] %}
+                <option value="{{ deg }}" {% if camera.display_rotation == deg %}selected{% endif %}>
+                    {{ deg }}&deg;{% if deg == 0 %} (no rotation){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+
         <label class="flex items-center gap-2 nav-label text-on-surface-variant">
             <input type="checkbox" name="ptz_enabled" value="1" {% if camera.ptz_enabled %}checked{% endif %}
                    class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">

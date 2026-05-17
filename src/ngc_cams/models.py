@@ -20,6 +20,7 @@ class Camera:
     ptz_enabled: bool = False
     record_mode: RecordMode = RecordMode.OFF
     retention_days: int = 7
+    display_rotation: int = 0  # 0, 90, 180, or 270 -- applied via CSS only
 
 
 @dataclass(frozen=True)

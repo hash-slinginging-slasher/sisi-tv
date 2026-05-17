@@ -12,7 +12,7 @@
             <option value="{{ n }}" {% if columns == n %}selected{% endif %}>{{ n }} column{{ 's' if n > 1 }}</option>
             {% endfor %}
         </select>
-        <span id="layout-hint" class="nav-label text-on-surface-variant text-[10px]">Drag tiles to reorder.</span>
+        <span id="layout-hint" class="nav-label text-on-surface-variant text-[10px]">Drag tiles to reorder. Explicit column counts fill the viewport.</span>
     </div>
     <span class="nav-label text-on-surface-variant">{{ visible|length }} feed{{ 's' if visible|length != 1 }}</span>
 </div>
@@ -22,16 +22,29 @@
     <p class="text-on-surface-variant">No cameras yet. <a href="/settings" class="text-primary hover:underline">Add one</a> first.</p>
 </div>
 {% else %}
-<div id="grid-container"
-     data-columns="{{ columns }}"
+{# Compute rows so the grid fills the viewport: rows = ceil(N / cols). The
+   "auto" mode stays scroll-flowing with aspect-video tiles. Explicit column
+   counts give a video-wall mosaic that uses every pixel of vertical space. #}
+{% if columns == 'auto' %}
+<div id="grid-container" data-columns="auto"
      class="grid gap-3"
-     style="{% if columns == 'auto' %}grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));{% else %}grid-template-columns: repeat({{ columns }}, minmax(0, 1fr));{% endif %}">
+     style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+{% else %}
+{% set rows = ((visible|length + columns - 1) // columns) %}
+<div id="grid-container" data-columns="{{ columns }}"
+     class="grid gap-3"
+     style="grid-template-columns: repeat({{ columns }}, minmax(0, 1fr));
+            grid-template-rows: repeat({{ rows }}, minmax(0, 1fr));
+            height: calc(100vh - 9rem);">
+{% endif %}
     {% for cam in visible %}
     <div data-camera-id="{{ cam.id }}"
          draggable="true"
-         class="grid-tile group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move">
+         class="grid-tile group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
         <a href="/cameras/{{ cam.id }}" class="block w-full h-full">
-            <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view" class="w-full h-full object-cover pointer-events-none">
+            <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"
+                 class="w-full h-full object-cover pointer-events-none"
+                 {% if cam.display_rotation %}style="transform: rotate({{ cam.display_rotation }}deg);{% if cam.display_rotation in [90, 270] %} transform-origin: center;{% endif %}"{% endif %}>
         </a>
         <div class="scanline pointer-events-none"></div>
         <div class="absolute top-2 left-2 flex gap-1 pointer-events-none">

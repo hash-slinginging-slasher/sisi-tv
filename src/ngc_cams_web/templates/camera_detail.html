@@ -20,7 +20,9 @@
             </a>
         </div>
         <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-outline-variant">
-            <img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view" class="w-full h-full object-cover">
+            <img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view"
+                 class="w-full h-full object-cover"
+                 {% if camera.display_rotation %}style="transform: rotate({{ camera.display_rotation }}deg);"{% endif %}>
             <div class="scanline"></div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 nav-label">
