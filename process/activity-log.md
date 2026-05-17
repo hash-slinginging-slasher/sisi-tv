@@ -72,6 +72,15 @@
 
 ## 2026-05-17
 
+### File post-pivot follow-ups in the kanban
+**Files Changed:** `kanban-to.md`
+
+- Added three Backlog cards surfaced by the final code review: retention pruning in the lifespan poller (disk usage grows forever today), concurrency hardening with a per-connection RLock (TOCTOU races on `repo.update` once threadpool dispatch is active), and surfacing poller failures via `logger.exception` instead of bare `pass` (silent failures hide ffmpeg breakage).
+
+**Deployment:** Not deployed
+
+---
+
 ### Post-pivot doc + dead-state cleanup
 **Files Changed:** `requirements.txt`, `README.md`, `AGENTS.md`, `CLAUDE.md`, `src/ngc_cams/config.py`, `tests/test_config.py`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_web_cameras.py`, `tests/test_web_live_route.py`, `tests/test_web_discovery.py`, `tests/test_web_composition.py`
 
