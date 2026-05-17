@@ -6,12 +6,11 @@ Source of truth for what's next on the personal-app roadmap. Move cards across c
 
 ## Backlog
 
-### Retention pruning task in the lifespan poller
-`Camera.retention_days` is stored on every camera (default 7) but nothing actually deletes old `.mp4` segments — disk usage will grow forever. Wire pruning into the existing poller lifespan in `src/ngc_cams_web/composition.py`.
+### Disk guard for `AppConfig.disk_guard_free_gb`
+Retention pruning landed but the disk-guard half of the original card didn't: when free disk under the configured threshold, new segment writes should pause until pruning catches up. Live view should continue regardless.
 
-- **Touches:** new `src/ngc_cams/recording/retention.py` (pure function: given `recording_root`, `retention_days`, and a clock, returns the list of segment paths older than the cutoff and a list of `recording_segments` rows to delete). Call it from the poller on a slower cadence than the 1 s ffmpeg poll (every 5 min is plenty). DB cleanup via `SegmentRepository.delete_older_than(camera_id, cutoff)` (new method). `AppConfig.disk_guard_free_gb` should also factor in — pause new segment writes if disk is below threshold.
-- **Open questions:** Per-camera `retention_days` vs. global override? PRD says per-camera. Should retention also remove the empty date directories left behind, or leave them?
-- **Done when:** After 8 days of recording, segments older than 7 days are gone from disk and `recording_segments` table; new segments still land normally.
+- **Touches:** `src/ngc_cams/recording/manager.py` — check free space before spawning each ffmpeg in `start()`; if below threshold, log a warning and skip (manager already has a `_failed_camera_ids` pattern for similar one-shot opt-outs). Or hold off in `apply_modes()` until free space recovers. Pull the check into a tiny helper for testing (`shutil.disk_usage`).
+- **Done when:** Simulating low free space (mock `shutil.disk_usage`) prevents new ffmpeg spawns, and recovering free space resumes recording on the next `apply_modes` tick.
 
 ### Concurrency hardening: lock around `CameraRepository` / `SegmentRepository` writes
 `ngc_cams.db.connect()` sets `check_same_thread=False` to make Starlette's threadpool dispatch work, but the shared `sqlite3.Connection` is now mutated from multiple threads (route handlers in the threadpool, poller on the event-loop thread, `RecordingManager._ingest_new_segments` from the segment-list reader). SQLite serializes individual statements, but read-modify-write patterns like `CameraRepository.update` (which does `execute(UPDATE)` then `get()`) are not atomic across calls. Concrete failure: two simultaneous record-toggles can interleave and one writer reads the other's mid-flight state.
@@ -52,6 +51,7 @@ _empty_
 
 ## Done
 
+- **2026-05-17** — Retention pruning in the lifespan. `SegmentRepository.delete_older_than` + new `ngc_cams.recording.retention.prune_all` use each camera's `retention_days` to remove old `recording_segments` rows and unlink the matching `.mp4` files. Wired into the FastAPI lifespan on a 5-minute cadence next to the existing 1-s recording-manager poller. 79/79 tests, ruff clean.
 - **2026-05-17** — FastAPI + HTMX web UI pivot replacing Qt. `ngc-cams-web` console entry boots uvicorn on 127.0.0.1:8000 with cameras CRUD (add/delete/toggle-record/detail), MJPEG live view (`/cameras/{id}/live.mjpg`), HTMX-driven discovery, and a `RecordingManager.poll()` lifespan. Qt UI + PyQt6/python-vlc deps removed.
 - **2026-05-16** — Cameras CRUD + manual Discover (Phases A-E from `docs/plans/2026-05-16-ui-wireup.md`). 25/25 tests, ruff clean.
 - **2026-05-17** — Live view (libvlc embedded in Qt) + auto-discovery on launch + native-HWND fix. Verified visually with camera 57 streaming into the viewer.

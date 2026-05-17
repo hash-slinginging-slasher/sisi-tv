@@ -34,7 +34,9 @@ def main() -> int:
         cameras=cameras,
         discovery=discovery,
         recording_manager=recording,
+        segments=segments,
         lifespan_poll_seconds=1.0,
+        retention_interval_seconds=300.0,
     )
 
     host, port = "127.0.0.1", 8000

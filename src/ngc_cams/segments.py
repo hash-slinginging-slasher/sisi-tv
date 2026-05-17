@@ -60,6 +60,23 @@ class SegmentRepository:
             has_audio=has_audio,
         )
 
+    def delete_older_than(self, camera_id: int, cutoff: datetime) -> list[Path]:
+        """Delete every segment row for ``camera_id`` whose ``started_at`` is
+        before ``cutoff``. Returns the file paths the rows referenced so the
+        caller can unlink them on disk."""
+        cutoff_iso = cutoff.isoformat(timespec="seconds")
+        rows = self._connection.execute(
+            "SELECT path FROM recording_segments "
+            "WHERE camera_id = ? AND started_at < ? ORDER BY started_at",
+            (camera_id, cutoff_iso),
+        ).fetchall()
+        self._connection.execute(
+            "DELETE FROM recording_segments WHERE camera_id = ? AND started_at < ?",
+            (camera_id, cutoff_iso),
+        )
+        self._connection.commit()
+        return [Path(row["path"]) for row in rows]
+
     def list_by_camera(self, camera_id: int) -> list[StoredSegment]:
         rows = self._connection.execute(
             """

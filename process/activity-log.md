@@ -72,6 +72,20 @@
 
 ## 2026-05-17
 
+### Retention pruning in the lifespan
+**Files Changed:** `src/ngc_cams/recording/retention.py` (new), `src/ngc_cams/segments.py`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_recording_retention.py` (new), `tests/test_segments.py`, `kanban-to.md`
+
+- New `SegmentRepository.delete_older_than(camera_id, cutoff)` returns the file paths of the rows it deletes so the caller can unlink them; SELECT-then-DELETE keeps the impl portable across SQLite versions that don't support `RETURNING`.
+- New `ngc_cams.recording.retention` module exposes `prune_camera` and `prune_all`: per-camera retention via each camera's `retention_days`, with an injectable `file_remover` so tests don't touch real disk. File-unlink errors are swallowed so a missing/locked file doesn't block DB cleanup.
+- `build_app` accepts a new optional `segments` + `retention_interval_seconds`; when both are set alongside `recording_manager`, the lifespan spawns a second background task that runs `prune_all` every interval. `__main__.py` passes `retention_interval_seconds=300.0` so production prunes every 5 minutes.
+- Retention task uses `logger.exception` on failure (not the existing poller's bare `pass`) — the "surface poller failures" kanban card will align the older poller in its own turn.
+- Kanban card "Retention pruning task in the lifespan poller" moved to Done; spun off a new "Disk guard for AppConfig.disk_guard_free_gb" Backlog card for the disk-pause half of the original requirement.
+
+**Deployment:** Not deployed
+**Test Results:** 79/79 passed
+
+---
+
 ### File post-pivot follow-ups in the kanban
 **Files Changed:** `kanban-to.md`
 
