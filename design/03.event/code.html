@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sisi-TV | Event History &amp; Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#d4e4fa",
+                        "on-tertiary-fixed-variant": "#454749",
+                        "primary-fixed": "#9cf0ff",
+                        "tertiary-fixed-dim": "#c6c6c9",
+                        "tertiary": "#ececef",
+                        "on-primary-fixed-variant": "#004f58",
+                        "inverse-on-surface": "#233143",
+                        "on-primary-fixed": "#001f24",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#57595b",
+                        "secondary": "#ffb4aa",
+                        "on-primary": "#00363d",
+                        "inverse-surface": "#d4e4fa",
+                        "surface-container-highest": "#273647",
+                        "outline-variant": "#3b494c",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#bac9cc",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#d0d0d3",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary": "#690003",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#ffdad5",
+                        "tertiary-fixed": "#e2e2e5",
+                        "surface-container-lowest": "#010f1f",
+                        "background": "#051424",
+                        "surface": "#051424",
+                        "secondary-container": "#c5020b",
+                        "on-background": "#d4e4fa",
+                        "surface-container": "#122131",
+                        "surface-dim": "#051424",
+                        "primary-container": "#00e5ff",
+                        "secondary-fixed-dim": "#ffb4aa",
+                        "on-secondary-fixed-variant": "#930005",
+                        "on-tertiary-fixed": "#1a1c1e",
+                        "on-secondary-fixed": "#410001",
+                        "surface-variant": "#273647",
+                        "on-secondary-container": "#ffd2cc",
+                        "surface-container-high": "#1c2b3c",
+                        "surface-tint": "#00daf3",
+                        "surface-container-low": "#0d1c2d",
+                        "on-primary-container": "#00626e",
+                        "outline": "#849396",
+                        "primary": "#c3f5ff",
+                        "inverse-primary": "#006875",
+                        "on-tertiary": "#2f3133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["JetBrains Mono"],
+                        "data-mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["JetBrains Mono"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "data-mono-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-caps": ["11px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #051424; }
+        ::-webkit-scrollbar-thumb { background: #3b494c; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00daf3; }
+        
+        .tactical-glow {
+            box-shadow: 0 0 15px rgba(0, 218, 243, 0.15);
+        }
+        .event-card:hover .event-time { color: #00daf3; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-full w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline-variant flex flex-col py-6 px-4 bg-surface-container-low dark:bg-surface-container-low z-50">
+<div class="mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center tactical-glow">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary tracking-tighter">Sisi-TV</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Vigilant Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="group flex items-center gap-3 px-3 py-3 font-label-caps text-label-caps transition-colors duration-200 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-3 font-label-caps text-label-caps transition-colors duration-200 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span>Live Matrix</span>
+</a>
+<!-- Active State: Event History -->
+<a class="group flex items-center gap-3 px-3 py-3 font-label-caps text-label-caps transition-colors duration-200 text-primary dark:text-primary border-r-2 border-primary bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span>Event History</span>
+</a>
+<a class="group flex items-center gap-3 px-3 py-3 font-label-caps text-label-caps transition-colors duration-200 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>System Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-4 bg-surface-container rounded-xl flex items-center gap-3 border border-outline-variant">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center overflow-hidden">
+<img alt="Boy Sisi mascot holding a surveillance tablet" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT2FWzZmkbQwod9rL-ZRRqkomUYeBW55esR5gN2vWLysLufpcVp3R9OlNOr2OuAnsxXc4GSiEMlztkg9GEHDw15zla6ah0qjcJYDqlNJPrfgI2V13NULrG3mWEG7fR2a0aK2xj5jQEVEC7A2EZjNez4RblerZZg4WJVnAw1aV8pmdX8NAq-Jg_dZVV_uw45P2sHWxSYCKAhPpUqSS72adbsJ2DSsQWVdG3tKbmuC0cYppZfncEhBLtGNb52omUKRXldQseFD-HpXQ"/>
+</div>
+<div>
+<div class="font-data-mono-sm text-data-mono-sm text-on-surface">System Live</div>
+<div class="font-label-caps text-label-caps text-primary opacity-80">99.9% Uptime</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="flex justify-between items-center h-16 px-8 border-b border-outline-variant dark:border-outline-variant bg-surface dark:bg-surface">
+<div class="flex items-center gap-6">
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary">Event Intel</h2>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<div class="flex gap-4">
+<button class="font-label-caps text-label-caps text-primary border-b-2 border-primary py-5">History</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant py-5 hover:text-primary transition-colors">Anomalies</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant py-5 hover:text-primary transition-colors">Reports</button>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="timer">timer</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="database">database</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="wifi">wifi</span>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant group-hover:text-primary">SEC_ADMIN_01</span>
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Dynamic Grid Content -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Event Timeline -->
+<section class="w-[380px] border-r border-outline-variant flex flex-col bg-surface-container-low">
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Filter Logic</span>
+<span class="material-symbols-outlined text-primary text-sm cursor-pointer">tune</span>
+</div>
+<div class="flex gap-2 flex-wrap">
+<button class="bg-primary text-on-primary px-3 py-1.5 rounded-full font-label-caps text-[10px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done</span>All Events
+                        </button>
+<button class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full font-label-caps text-[10px] hover:bg-outline-variant">Motion</button>
+<button class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full font-label-caps text-[10px] hover:bg-outline-variant">Person</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+<!-- Event Cards -->
+<div class="event-card p-4 bg-surface-container-high border-l-4 border-error rounded-r-lg cursor-pointer transition-all hover:bg-surface-container-highest">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono-sm text-data-mono-sm text-error flex items-center gap-1 uppercase">
+<span class="material-symbols-outlined text-[14px]">warning</span> Critical
+                            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant opacity-60 event-time transition-colors">14:23:45</span>
+</div>
+<h4 class="font-headline-md text-[14px] text-on-surface mb-1">Human Detection: Perimeter</h4>
+<p class="font-body-md text-[12px] text-on-surface-variant leading-tight">Zone 4 trigger. Unknown biological entity detected near server rack.</p>
+</div>
+<div class="event-card p-4 bg-surface-container border-l-4 border-primary rounded-r-lg cursor-pointer transition-all hover:bg-surface-container-highest tactical-glow border-primary">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono-sm text-data-mono-sm text-primary flex items-center gap-1 uppercase">
+<span class="material-symbols-outlined text-[14px]">person</span> Detected
+                            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary event-time">13:05:12</span>
+</div>
+<h4 class="font-headline-md text-[14px] text-on-surface mb-1">Authenticated Entry: Room 2B</h4>
+<p class="font-body-md text-[12px] text-on-surface-variant leading-tight">Admin-01 biometric match. Session initiated.</p>
+</div>
+<div class="event-card p-4 bg-surface-container-low border-l-4 border-outline-variant rounded-r-lg cursor-pointer transition-all hover:bg-surface-container-highest">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant flex items-center gap-1 uppercase">
+<span class="material-symbols-outlined text-[14px]">settings</span> System
+                            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant opacity-60 event-time">11:58:02</span>
+</div>
+<h4 class="font-headline-md text-[14px] text-on-surface mb-1">Cloud Sync Complete</h4>
+<p class="font-body-md text-[12px] text-on-surface-variant leading-tight">All encrypted logs for Cluster-C uploaded to remote vault.</p>
+</div>
+<!-- Repeatable placeholder blocks -->
+<div class="event-card p-4 bg-surface-container-low border-l-4 border-outline-variant rounded-r-lg cursor-pointer transition-all hover:bg-surface-container-highest opacity-60">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant flex items-center gap-1 uppercase">
+<span class="material-symbols-outlined text-[14px]">motion_sense</span> Motion
+                            </span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">09:12:44</span>
+</div>
+<h4 class="font-headline-md text-[14px] text-on-surface mb-1">Lobby Movement</h4>
+<p class="font-body-md text-[12px] text-on-surface-variant leading-tight">Standard cleaning personnel activity detected.</p>
+</div>
+</div>
+</section>
+<!-- Right Panel: Intelligence Preview -->
+<section class="flex-1 bg-background flex flex-col relative overflow-y-auto">
+<!-- Preview Header -->
+<div class="p-8 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-sm sticky top-0 z-10">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-primary tracking-tight">Event Analysis: Room 2B</h3>
+<div class="flex gap-4 mt-2">
+<span class="font-data-mono-sm text-data-mono-sm px-3 py-1 bg-surface-container border border-outline-variant text-on-surface">NODE: SOUTH-WING-02</span>
+<span class="font-data-mono-sm text-data-mono-sm px-3 py-1 bg-surface-container border border-outline-variant text-on-surface">STAMP: 2023-10-27 | 13:05:12</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-highest text-on-surface hover:text-primary border border-outline-variant px-4 py-2 flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px]">ios_share</span>
+<span class="font-label-caps text-label-caps">Export</span>
+</button>
+<button class="bg-surface-container-highest text-on-surface hover:text-secondary border border-outline-variant px-4 py-2 flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+<span class="font-label-caps text-label-caps">Flag</span>
+</button>
+<button class="bg-error-container text-on-error-container px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span class="font-label-caps text-label-caps">Delete</span>
+</button>
+</div>
+</div>
+<!-- Main Content Body -->
+<div class="p-8 grid grid-cols-12 gap-8">
+<!-- Media Area -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<div class="relative group aspect-video bg-surface-container-high border border-outline-variant overflow-hidden tactical-glow">
+<img alt="CCTV feed snapshot" class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjhvHS__dpxyzrRetOyZbqvFMHv5YB_dzcY0ZdLOfsrE5kHb6VYQF-bPTAnG_hPvfzjdha2A1yyEELrg_4xgGExtlGEpwfTt2taNdPdkcMrIpEdZ3kvxXtQxp5gaPLCcRCisY8fVL8wl9pyrzs7PwFVDf4d4EnToX-lErldffTclQulWhmQMFmNpA1QMQgHmY6Cr60pH41HKYBa4DU6QO_BV_G5JwvXFVl1rK4Y4Gzu1jkSmDyBe6CdiD3yzDIo_IZqSG6eOPQGbc"/>
+<!-- Overlays -->
+<div class="absolute inset-0 pointer-events-none border-[12px] border-transparent group-hover:border-primary/10 transition-all duration-500"></div>
+<div class="absolute top-4 left-4 flex gap-2">
+<div class="bg-error/80 px-2 py-1 flex items-center gap-1 rounded shadow-lg backdrop-blur-md">
+<div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+<span class="font-data-mono-sm text-[10px] text-on-error font-bold tracking-widest uppercase">REC CLIP_772</span>
+</div>
+<div class="bg-surface/80 px-2 py-1 flex items-center gap-1 rounded shadow-lg backdrop-blur-md">
+<span class="font-data-mono-sm text-[10px] text-primary">ENCRYPTED</span>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 bg-surface/60 backdrop-blur-sm p-3 border border-outline-variant rounded">
+<div class="grid grid-cols-2 gap-x-4 gap-y-1">
+<span class="font-data-mono-sm text-[10px] text-on-surface-variant">BITRATE</span>
+<span class="font-data-mono-sm text-[10px] text-primary text-right">12.4 Mbps</span>
+<span class="font-data-mono-sm text-[10px] text-on-surface-variant">LATENCY</span>
+<span class="font-data-mono-sm text-[10px] text-primary text-right">42ms</span>
+</div>
+</div>
+<div class="absolute bottom-4 left-4">
+<button class="w-12 h-12 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-primary border border-primary/40 hover:scale-110 transition-transform pointer-events-auto">
+<span class="material-symbols-outlined text-3xl">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Technical Data -->
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container-low p-4 border border-outline-variant rounded">
+<span class="font-label-caps text-[10px] text-on-surface-variant block mb-1">THERMAL VARIANCE</span>
+<span class="font-data-mono-sm text-headline-md text-primary">+0.2°C</span>
+<div class="w-full h-1 bg-surface-container-high mt-2 rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-primary"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 border border-outline-variant rounded">
+<span class="font-label-caps text-[10px] text-on-surface-variant block mb-1">PIXEL DELTA</span>
+<span class="font-data-mono-sm text-headline-md text-primary">18.4%</span>
+<div class="w-full h-1 bg-surface-container-high mt-2 rounded-full overflow-hidden">
+<div class="w-1/4 h-full bg-secondary"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 border border-outline-variant rounded">
+<span class="font-label-caps text-[10px] text-on-surface-variant block mb-1">MATCH CONFIDENCE</span>
+<span class="font-data-mono-sm text-headline-md text-primary">99.8%</span>
+<div class="w-full h-1 bg-surface-container-high mt-2 rounded-full overflow-hidden">
+<div class="w-[99%] h-full bg-primary-container"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Intelligence Panel -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Boy Sisi Analysis -->
+<div class="bg-surface-container p-6 border border-outline-variant rounded-xl relative">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full bg-primary-container p-0.5 border border-primary">
+<img alt="Boy Sisi Avatar" class="w-full h-full rounded-full bg-tertiary" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLvTSulxPAjqqMTYVYbLCzYbLEpaJP42iVdlMQq7i3N1o57SCf47_pOzsrkyNNJ6r23ujxh83CgbMn0Bz6PHZOH33w06nXbMT5pfQz7NHmkgqdI_LdNvoBcswikL4Ah0JSBzXshqOp9nNCVDQNiL4N2EvwdfJJyAcgpeUyvCF52lC1D99U1W5AJhJX-PbKYam8sP2Ltlx5upGsEMrfV_eOyN3QUztzUgYOXNOLhxsuVn0Jv5xrtEKmKowUxCS7RCEHWeKdjYlWxQQ"/>
+</div>
+<div>
+<h5 class="font-headline-md text-[16px] text-primary">Boy Sisi Intelligence</h5>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Active Agent v4.2.0</span>
+</div>
+</div>
+<div class="space-y-4 font-body-md text-on-surface leading-relaxed relative z-10">
+<p class="bg-surface-container-high p-4 rounded-lg italic border-l-2 border-primary">
+                                    "I flagged this event because the facial geometry matched SEC_ADMIN_01, but the entry time was 4 minutes ahead of the scheduled shift. Access was granted based on biometric verification."
+                                </p>
+<div class="space-y-2">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<div>
+<div class="font-label-caps text-[11px] text-on-surface-variant uppercase">Identity Verified</div>
+<div class="font-data-mono-sm text-[12px]">User: David 'Admin' S.</div>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[18px]">psychology</span>
+<div>
+<div class="font-label-caps text-[11px] text-on-surface-variant uppercase">Logic Branch</div>
+<div class="font-data-mono-sm text-[12px]">Pattern: Authorized Early Arrival</div>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[18px]">radar</span>
+<div>
+<div class="font-label-caps text-[11px] text-on-surface-variant uppercase">Contextual Awareness</div>
+<div class="font-data-mono-sm text-[12px]">Ambient lighting: Optimized for biometric scan</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Decorative background glow -->
+<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
+</div>
+<!-- System Audit Log -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-4">
+<h6 class="font-label-caps text-label-caps text-on-surface-variant mb-3">Audit Trail (Monospace)</h6>
+<div class="space-y-2 font-data-mono-sm text-[11px] text-on-surface-variant">
+<div class="flex justify-between">
+<span>T-13:05:10</span>
+<span>PIR SENSOR TRIPPED</span>
+</div>
+<div class="flex justify-between">
+<span>T-13:05:11</span>
+<span class="text-primary">CAM_2B_FACE_SCAN_INIT</span>
+</div>
+<div class="flex justify-between">
+<span>T-13:05:12</span>
+<span class="text-primary">DB_QUERY: SUCCESS</span>
+</div>
+<div class="flex justify-between">
+<span>T-13:05:12</span>
+<span>MAGNET_LOCK_RELEASED</span>
+</div>
+<div class="flex justify-between">
+<span>T-13:05:15</span>
+<span class="text-secondary">AUTO_LOG_UPLOAD_SYNC</span>
+</div>
+</div>
+</div>
+<!-- User Interaction Section -->
+<div class="p-1 space-y-3">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Admin Resolution</label>
+<textarea class="w-full bg-surface-container-highest border border-outline-variant rounded p-3 text-on-surface font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none min-h-[100px]" placeholder="Add a follow-up note..."></textarea>
+<button class="w-full bg-primary text-on-primary py-3 font-label-caps text-label-caps tactical-glow hover:brightness-110 transition-all uppercase tracking-widest">
+                                Submit Observation
+                            </button>
+</div>
+</div>
+</div>
+<!-- Subtle Decorative Elements -->
+<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,218,243,0.02),transparent)]"></div>
+</section>
+</div>
+</main>
+<script>
+        // Micro-interaction for event selection
+        document.querySelectorAll('.event-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Clear existing active state
+                document.querySelectorAll('.event-card').forEach(c => {
+                    c.classList.remove('tactical-glow', 'border-primary');
+                    c.classList.add('border-outline-variant');
+                });
+                // Set new active state
+                this.classList.remove('border-outline-variant');
+                this.classList.add('tactical-glow', 'border-primary');
+                
+                // Simulate content loading animation
+                const preview = document.querySelector('section.flex-1');
+                preview.style.opacity = '0.7';
+                setTimeout(() => {
+                    preview.style.opacity = '1';
+                }, 200);
+            });
+        });
+
+        // Add scanline effect overlay via JS for immersion
+        const scanline = document.createElement('div');
+        scanline.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.2;
+        `;
+        document.body.appendChild(scanline);
+    </script>
+</body></html>

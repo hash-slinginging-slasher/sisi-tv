@@ -1,32 +1,87 @@
 {% extends "base.html" %}
-{% block title %}Grid — SISI-TV{% endblock %}
+{% block title %}Live Matrix — SISI-TV{% endblock %}
+{% block heading %}Live Matrix{% endblock %}
+
 {% block content %}
-<h2>Grid</h2>
-<p><a href="/">← Back to all cameras</a></p>
-
-{% if hidden_count %}
-<p class="empty">
-    Showing {{ visible|length }} of {{ visible|length + hidden_count }} cameras
-    (capped at {{ max_cells }}). Edit the camera list to choose which feeds to
-    show on the grid.
-</p>
-{% endif %}
-
-{% if visible %}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
-    {% for cam in visible %}
-    <a href="/cameras/{{ cam.id }}" style="display: block; text-decoration: none; color: inherit;">
-        <div style="border: 1px solid #ccc; padding: 0.25rem; background: #000;">
-            <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view" style="width: 100%; display: block;">
-            <div style="color: #eee; background: #000; padding: 0.25rem 0.5rem; font-size: 0.9rem;">
-                {{ cam.name }}
-                {% if cam.record_mode.value != 'off' %} — <span style="color: #f88;">REC</span>{% endif %}
-            </div>
-        </div>
-    </a>
-    {% endfor %}
+{% if not visible %}
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-12 text-center">
+    <p class="text-on-surface-variant">No cameras yet. <a href="/settings" class="text-primary hover:underline">Add one</a> first.</p>
 </div>
 {% else %}
-<p class="empty">No cameras yet. <a href="/">Add one</a> first.</p>
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+    <!-- Main feed -->
+    <div class="xl:col-span-3 space-y-3">
+        <div class="bg-surface-container-low border border-outline-variant rounded-xl p-3">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    {% if main_camera.record_mode.value != 'off' %}
+                    <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded live-pulse">REC</span>
+                    {% endif %}
+                    <span class="px-2 py-0.5 bg-error text-on-error text-[10px] font-bold rounded">LIVE</span>
+                    <span class="font-mono text-sm text-primary tracking-wider">CAM_{{ "%02d"|format(main_camera.id) }} / {{ main_camera.name|upper }}</span>
+                </div>
+                <a href="/cameras/{{ main_camera.id }}" class="nav-label text-primary flex items-center gap-1 hover:text-primary-fixed-dim">
+                    Detail <span class="material-symbols-outlined text-sm">open_in_new</span>
+                </a>
+            </div>
+            <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-outline-variant">
+                <img src="/cameras/{{ main_camera.id }}/live.mjpg" alt="{{ main_camera.name }} live view" class="w-full h-full object-cover">
+                <div class="scanline"></div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 nav-label">
+                <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                    <p class="text-on-surface-variant text-[9px]">RTSP</p>
+                    <p class="font-mono text-[10px] text-on-surface truncate">{{ main_camera.rtsp_url }}</p>
+                </div>
+                <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                    <p class="text-on-surface-variant text-[9px]">MODE</p>
+                    <p class="font-mono text-[10px] text-primary">{{ main_camera.record_mode.value|upper }}</p>
+                </div>
+                <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                    <p class="text-on-surface-variant text-[9px]">PTZ</p>
+                    <p class="font-mono text-[10px] {% if main_camera.ptz_enabled %}text-primary{% else %}text-on-surface-variant{% endif %}">
+                        {% if main_camera.ptz_enabled %}ENABLED{% else %}DISABLED{% endif %}
+                    </p>
+                </div>
+                <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                    <p class="text-on-surface-variant text-[9px]">RETENTION</p>
+                    <p class="font-mono text-[10px] text-on-surface">{{ main_camera.retention_days }}d</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar feeds -->
+    <div class="space-y-3">
+        {% for cam in side_cameras %}
+        <a href="/cameras/{{ cam.id }}" class="block group relative aspect-video bg-black rounded-lg border border-outline-variant overflow-hidden hover:border-primary transition-colors">
+            <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view" class="w-full h-full object-cover">
+            <div class="scanline"></div>
+            <div class="absolute top-2 left-2 flex gap-1">
+                <span class="px-1.5 py-0.5 bg-error text-on-error text-[9px] font-bold rounded">LIVE</span>
+                {% if cam.record_mode.value != 'off' %}
+                <span class="px-1.5 py-0.5 bg-black/60 backdrop-blur-md text-secondary text-[9px] font-bold rounded border border-secondary/40">REC</span>
+                {% endif %}
+            </div>
+            <div class="absolute bottom-2 left-2 right-2">
+                <p class="font-mono text-[10px] text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded tracking-wider inline-block">
+                    CAM_{{ "%02d"|format(cam.id) }} / {{ cam.name|upper }}
+                </p>
+            </div>
+        </a>
+        {% endfor %}
+        {% if not side_cameras %}
+        <div class="bg-surface-container-low border border-outline-variant border-dashed rounded-lg p-6 text-center text-on-surface-variant text-sm">
+            Only one camera configured. Add more in <a href="/settings" class="text-primary">Settings</a>.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if hidden_count %}
+<p class="mt-4 text-sm text-on-surface-variant text-center">
+    Showing {{ visible|length }} of {{ visible|length + hidden_count }} cameras (matrix capped at {{ max_cells }}).
+</p>
+{% endif %}
 {% endif %}
 {% endblock %}

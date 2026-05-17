@@ -1,42 +1,145 @@
 {% extends "base.html" %}
-{% block title %}Cameras — SISI-TV{% endblock %}
+{% block title %}Dashboard — SISI-TV{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
 {% block content %}
-<h2>Cameras</h2>
-<p><a href="/grid">View grid →</a> &nbsp;|&nbsp; <a href="/settings">Settings →</a></p>
-{% if cameras %}
-<table>
-    <thead><tr><th>Name</th><th>RTSP</th><th>Record</th><th>Actions</th></tr></thead>
-    <tbody>
-    {% for cam in cameras %}
-        <tr>
-            <td><a href="/cameras/{{ cam.id }}">{{ cam.name }}</a></td>
-            <td><code>{{ cam.rtsp_url }}</code></td>
-            <td>{{ cam.record_mode.value }}</td>
-            <td>
-                <form class="inline" method="post" action="/cameras/{{ cam.id }}/record">
-                    <button type="submit">Toggle record</button>
-                </form>
-                <form class="inline" method="post" action="/cameras/{{ cam.id }}/delete">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p class="empty">No cameras yet. Add one below.</p>
-{% endif %}
+<div class="space-y-6">
 
-<h3>Add camera</h3>
-<form method="post" action="/cameras/add">
-    <label>Name <input name="name" required></label>
-    <label>RTSP URL <input name="rtsp_url" required size="50"></label>
-    <label><input type="checkbox" name="ptz_enabled" value="1"> PTZ</label>
-    <button type="submit">Add</button>
-</form>
+    <!-- Hero status + stats -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-surface-container-low border border-outline-variant rounded-xl p-6 relative overflow-hidden flex items-center justify-between">
+            <div class="relative z-10">
+                <span class="nav-label text-primary bg-primary/10 px-2 py-0.5 rounded">Status: Optimal</span>
+                <h2 class="font-mono text-3xl font-bold text-on-surface mt-3 mb-2">Systems Nominal</h2>
+                <p class="text-sm text-on-surface-variant max-w-md">All monitoring nodes are responding. SISI-TV is actively recording configured cameras and pruning old segments per retention policy.</p>
+                <div class="mt-5 flex gap-3">
+                    <a href="/grid" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">View Live</a>
+                    <a href="/settings" class="px-5 py-2 border border-outline text-on-surface nav-label rounded-lg hover:bg-surface-container-highest transition-colors">Manage Cameras</a>
+                </div>
+            </div>
+            <div class="relative w-32 h-32 lg:w-48 lg:h-48 flex items-center justify-center">
+                <img src="/static/boy-sisi.png" alt="Boy Sisi mascot" class="z-10 w-full h-full object-contain rounded-xl">
+                <div class="absolute inset-0 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+            </div>
+        </div>
 
-<h3>Discover</h3>
-<button hx-post="/discover" hx-target="#discovered" hx-swap="innerHTML">Run discovery</button>
-<div id="discovered"></div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between min-h-[110px]">
+                <span class="material-symbols-outlined text-primary">videocam</span>
+                <div>
+                    <p class="font-mono text-2xl text-on-surface leading-tight">{{ "%02d"|format(stats.total_cameras) }}</p>
+                    <p class="nav-label text-on-surface-variant">Total Cameras</p>
+                </div>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between min-h-[110px]">
+                <span class="material-symbols-outlined {% if stats.active_alerts %}text-secondary{% else %}text-on-surface-variant{% endif %}">notifications_active</span>
+                <div>
+                    <p class="font-mono text-2xl text-on-surface leading-tight">{{ "%02d"|format(stats.active_alerts) }}</p>
+                    <p class="nav-label text-on-surface-variant">Recording</p>
+                </div>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between min-h-[110px]">
+                <span class="material-symbols-outlined text-primary">router</span>
+                <div>
+                    <p class="font-mono text-2xl text-on-surface leading-tight">{{ stats.uptime }}</p>
+                    <p class="nav-label text-on-surface-variant">Network Uptime</p>
+                </div>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between min-h-[110px]">
+                <span class="material-symbols-outlined text-primary">storage</span>
+                <div>
+                    <p class="font-mono text-2xl text-on-surface leading-tight">{{ stats.free_storage }}</p>
+                    <p class="nav-label text-on-surface-variant">Free Storage</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Feed Matrix -->
+    <section class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h3 class="font-mono text-xl text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">sensors</span>
+                Live Feed Matrix
+            </h3>
+            <a href="/grid" class="nav-label text-primary hover:text-primary-fixed-dim flex items-center gap-1">
+                View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+        {% if feed_cameras %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for cam in feed_cameras %}
+            <a href="/cameras/{{ cam.id }}" class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300 block">
+                <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view" class="w-full h-full object-cover">
+                <div class="scanline"></div>
+                <div class="absolute top-3 left-3 flex gap-2">
+                    <span class="px-2 py-0.5 bg-error text-[10px] font-bold text-on-error rounded live-pulse">LIVE</span>
+                    {% if cam.record_mode.value != 'off' %}
+                    <span class="px-2 py-0.5 bg-black/60 backdrop-blur-md text-[10px] font-bold text-secondary rounded border border-secondary/40">REC</span>
+                    {% endif %}
+                </div>
+                <div class="absolute bottom-3 left-3 right-3">
+                    <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded inline-block">
+                        <p class="font-mono text-xs text-white tracking-wider">CAM_{{ "%02d"|format(cam.id) }} / {{ cam.name|upper }}</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-surface-container-low border border-outline-variant rounded-xl p-8 text-center">
+            <p class="text-on-surface-variant">No cameras yet. <a href="/settings" class="text-primary hover:underline">Add one</a> to start monitoring.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Intelligence Logs (recent segments) -->
+    <section class="space-y-3">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">terminal</span>
+            <h3 class="font-mono text-xl text-on-surface">SISI Intelligence Logs</h3>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+            <div class="grid grid-cols-12 gap-4 p-3 border-b border-outline-variant bg-surface-container-high nav-label text-on-surface-variant">
+                <div class="col-span-3">TIMESTAMP</div>
+                <div class="col-span-3">ENTITY</div>
+                <div class="col-span-1">STATUS</div>
+                <div class="col-span-5">EVENT DESCRIPTION</div>
+            </div>
+            <div class="divide-y divide-outline-variant font-mono text-xs">
+                {% if recent_segments %}
+                    {% for seg in recent_segments %}
+                    {% set cam = cam_lookup.get(seg.camera_id) %}
+                    <div class="grid grid-cols-12 gap-4 p-4 hover:bg-surface-container-highest transition-colors items-center">
+                        <div class="col-span-3 text-on-surface-variant">{{ seg.started_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                        <div class="col-span-3 text-primary flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+                            CAM_{{ "%02d"|format(seg.camera_id) }}{% if cam %} / {{ cam.name|upper }}{% endif %}
+                        </div>
+                        <div class="col-span-1">
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 text-[10px]">REC</span>
+                        </div>
+                        <div class="col-span-5 text-on-surface">
+                            Segment captured{% if seg.duration_seconds %} ({{ seg.duration_seconds }}s){% endif %}{% if seg.has_audio %}, with audio{% endif %}.
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="grid grid-cols-12 gap-4 p-4 items-center">
+                        <div class="col-span-3 text-on-surface-variant">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                        <div class="col-span-3 text-primary flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+                            CORE
+                        </div>
+                        <div class="col-span-1">
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 text-[10px]">OK</span>
+                        </div>
+                        <div class="col-span-5 text-on-surface">SISI-TV online. No recorded segments yet.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
 {% endblock %}

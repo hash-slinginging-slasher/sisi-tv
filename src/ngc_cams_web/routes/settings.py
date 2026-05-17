@@ -26,16 +26,19 @@ def _current_values(request: Request) -> dict[str, str]:
 @router.get("/settings", response_class=HTMLResponse)
 def settings_page(request: Request, saved: int = 0):
     templates = request.app.state.templates
+    cameras = request.app.state.cameras.list()
     return templates.TemplateResponse(
         request,
         "settings.html",
         {
+            "active_nav": "settings",
             "values": _current_values(request),
             "labels": _FIELD_LABELS,
             "fields": EDITABLE_FIELD_NAMES,
             "saved": bool(saved),
             "stored": settings_store.load(),
             "stored_path": settings_store.default_settings_path(),
+            "cameras": cameras,
         },
     )
 

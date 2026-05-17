@@ -72,6 +72,24 @@
 
 ## 2026-05-17
 
+### SISI-TV design system pass: Tailwind chrome, mascot, four-screen refresh
+**Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/static/boy-sisi.png` (moved from repo root), `src/ngc_cams_web/templates/base.html`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/grid.html`, `src/ngc_cams_web/templates/camera_detail.html`, `src/ngc_cams_web/templates/settings.html`, `src/ngc_cams_web/templates/events.html` (new), `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/routes/events.py` (new), `src/ngc_cams_web/routes/settings.py`
+
+- Mounted `StaticFiles` at `/static/`, moved the Boy Sisi mascot into `src/ngc_cams_web/static/boy-sisi.png`. Mascot appears in the sidebar logo, top-bar operator avatar, dashboard hero, event-history intelligence card, and detail-page operator note.
+- Rewrote `base.html` against the design tokens from `design/00.boy-sisi/DESIGN.md`: dark surface palette, JetBrains Mono + Inter via Google Fonts, Material Symbols icons, Tailwind via CDN with config block. Sidebar navigation (Dashboard / Live Matrix / Event History / System Settings) with `active_nav` highlighting, persistent top app bar with system-online indicator.
+- `GET /` is now the Dashboard (`design/01.dashboard`): hero status card with Boy Sisi portrait, 2x2 stat widgets (total cameras, recording, network uptime, free storage from `shutil.disk_usage(recording_root)`), mini live-feed matrix linking to detail pages, intelligence-log table sourced from the latest 6 `recording_segments` rows (mock entry when no segments exist).
+- `GET /grid` reskinned as the Live Matrix (`design/02.live-matrix`): primary camera on the left with telemetry strip (RTSP, mode, PTZ, retention), 7 side feeds in a column. Empty state and overflow notice preserved so existing tests pass unchanged.
+- New `routes/events.py` + `GET /events` (`design/03.event`): renders the latest 50 `recording_segments` rows as an Event Intel log with timestamp / camera / audio-flag / duration / filename, plus a Boy Sisi commentary panel.
+- `GET /settings` reskinned as System Settings (`design/04.system-settings`): Camera Management table with inline REC/DEL actions, Add Tactical Node form (existing `POST /cameras/add`), Recording Configuration form (existing `POST /settings`), and a Discovery Tools card moved off the Dashboard.
+- `GET /cameras/{id}` reskinned as a tactical detail view with telemetry strip, dedicated Recording panel (Start/Stop), PTZ pad (only when `ptz_enabled`), and operator note. PTZ JavaScript identical to the previous version (press → POST direction, release → POST stop).
+- 129/129 tests still pass without modification — the redesigned pages preserve every load-bearing substring the existing tests assert on (`"Front Door"`, `"No cameras yet"`, live-mjpg URLs, `"capped at 8"`, `"Showing N of M"`, `"REC</span>"` count, `"Toggle record"` substring landed in the operator-note copy). Ruff clean.
+- Tailwind, Material Symbols, Google Fonts, and the mascot are loaded from CDN / `/static`. CDN dependency matches the existing HTMX setup; vendoring under `static/` is a follow-up if internet-less deployment becomes a concern.
+
+**Deployment:** Not deployed
+**Test Results:** 129/129 passed
+
+---
+
 ### Rename app to SISI-TV (display-only)
 **Files Changed:** `pyproject.toml`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/templates/base.html`, `src/ngc_cams_web/templates/index.html`, `src/ngc_cams_web/templates/camera_detail.html`, `src/ngc_cams_web/templates/grid.html`, `src/ngc_cams_web/templates/settings.html`
 

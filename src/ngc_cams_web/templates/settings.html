@@ -1,32 +1,151 @@
 {% extends "base.html" %}
-{% block title %}Settings — SISI-TV{% endblock %}
-{% block content %}
-<h2>Settings</h2>
-<p><a href="/">← Back to all cameras</a></p>
+{% block title %}System Settings — SISI-TV{% endblock %}
+{% block heading %}System Settings{% endblock %}
 
+{% block content %}
 {% if saved %}
-<p style="background: #efe; padding: 0.5rem; border: 1px solid #8b8;">
-    Saved. <strong>Restart <code>sisi-tv</code> for changes to take effect</strong>
-    (recording manager and DB connection are constructed at startup).
-</p>
+<div class="mb-4 bg-primary/10 border border-primary/40 rounded-lg px-4 py-3 flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary">check_circle</span>
+    <p class="text-sm text-on-surface">
+        Saved. <strong>Restart <code class="text-primary">sisi-tv</code> for changes to take effect</strong> (recording manager + DB connection are constructed at startup).
+    </p>
+</div>
 {% endif %}
 
-<form method="post" action="/settings">
-    {% for name in fields %}
-    <p>
-        <label>
-            {{ labels[name] }}<br>
-            <input name="{{ name }}" value="{{ values[name] }}" size="60">
-        </label>
-    </p>
-    {% endfor %}
-    <button type="submit">Save</button>
-</form>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
-<h3>Notes</h3>
-<ul>
-    <li>Settings are stored at <code>{{ stored_path }}</code> and override the built-in defaults.</li>
-    <li>Leaving a field empty keeps the previously saved value.</li>
-    <li>The database (<code>ngc-cams.sqlite3</code>) stays where it was created and is not relocated by changing the recording root.</li>
-</ul>
+    <div class="xl:col-span-2 space-y-4">
+        <!-- Camera Management -->
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl">
+            <header class="flex items-center justify-between px-4 py-3 border-b border-outline-variant">
+                <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">videocam</span>
+                    Camera Management
+                </h3>
+                <span class="nav-label text-on-surface-variant">{{ cameras|length }} configured</span>
+            </header>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-surface-container-high nav-label text-on-surface-variant">
+                        <tr>
+                            <th class="text-left p-3">Name</th>
+                            <th class="text-left p-3">RTSP Endpoint</th>
+                            <th class="text-left p-3">Mode</th>
+                            <th class="text-left p-3">PTZ</th>
+                            <th class="text-right p-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant">
+                        {% for cam in cameras %}
+                        <tr class="hover:bg-surface-container-highest transition-colors">
+                            <td class="p-3">
+                                <a href="/cameras/{{ cam.id }}" class="text-primary hover:underline">{{ cam.name }}</a>
+                            </td>
+                            <td class="p-3 font-mono text-xs text-on-surface-variant truncate max-w-xs">{{ cam.rtsp_url }}</td>
+                            <td class="p-3">
+                                {% if cam.record_mode.value == 'off' %}
+                                <span class="px-2 py-0.5 bg-surface-container-high border border-outline-variant rounded text-[10px] font-mono text-on-surface-variant">OFF</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 rounded text-[10px] font-mono">{{ cam.record_mode.value|upper }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-3 font-mono text-xs">
+                                {% if cam.ptz_enabled %}<span class="text-primary">YES</span>{% else %}<span class="text-on-surface-variant">NO</span>{% endif %}
+                            </td>
+                            <td class="p-3 text-right">
+                                <form class="inline" method="post" action="/cameras/{{ cam.id }}/record">
+                                    <button class="px-2 py-1 bg-surface-container-high border border-outline-variant rounded text-[10px] font-mono text-on-surface hover:border-primary hover:text-primary transition-colors">REC</button>
+                                </form>
+                                <form class="inline ml-1" method="post" action="/cameras/{{ cam.id }}/delete" onsubmit="return confirm('Delete {{ cam.name }}?');">
+                                    <button class="px-2 py-1 bg-surface-container-high border border-secondary/30 rounded text-[10px] font-mono text-secondary hover:bg-secondary/10 transition-colors">DEL</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not cameras %}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-on-surface-variant">No cameras configured. Use "Add Tactical Node" below.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Add Tactical Node -->
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
+            <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">add_circle</span>
+                Add Tactical Node
+            </h3>
+            <form method="post" action="/cameras/add" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block">
+                    <span class="nav-label text-on-surface-variant">Name</span>
+                    <input name="name" required class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none" placeholder="e.g. Front Door">
+                </label>
+                <label class="block">
+                    <span class="nav-label text-on-surface-variant">RTSP URL</span>
+                    <input name="rtsp_url" required class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none" placeholder="rtsp://192.168.1.x/main">
+                </label>
+                <label class="flex items-center gap-2 nav-label text-on-surface-variant">
+                    <input type="checkbox" name="ptz_enabled" value="1" class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">
+                    PTZ Capable
+                </label>
+                <div class="md:text-right">
+                    <button type="submit" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">Initialize Node</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Storage / Recording Config -->
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
+            <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">tune</span>
+                Recording Configuration
+            </h3>
+            <form method="post" action="/settings" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {% for name in fields %}
+                <label class="block">
+                    <span class="nav-label text-on-surface-variant">{{ labels[name] }}</span>
+                    <input name="{{ name }}" value="{{ values[name] }}" class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-xs text-on-surface focus:border-primary focus:outline-none">
+                </label>
+                {% endfor %}
+                <div class="md:col-span-2 md:text-right">
+                    <button type="submit" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">Save</button>
+                </div>
+            </form>
+            <p class="text-[10px] font-mono text-on-surface-variant">
+                Settings file: <code class="text-on-surface">{{ stored_path }}</code> &middot; Blank fields keep prior value &middot; DB stays where created.
+            </p>
+        </section>
+    </div>
+
+    <!-- Right rail: discovery + storage gauge + Sisi note -->
+    <aside class="space-y-4">
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
+            <h3 class="font-mono text-base text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">radar</span>
+                Discovery Tools
+            </h3>
+            <p class="text-xs text-on-surface-variant">Auto-scan the local subnet for ONVIF-compliant nodes.</p>
+            <button hx-post="/discover" hx-target="#discovered" hx-swap="innerHTML" class="w-full px-4 py-2 border border-primary-fixed-dim/50 text-primary nav-label rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">radar</span>
+                Run Discovery
+            </button>
+            <div id="discovered" class="text-sm"></div>
+        </section>
+
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex gap-3 items-start">
+            <div class="w-12 h-12 rounded-lg overflow-hidden border border-primary-fixed-dim/30 flex-shrink-0">
+                <img src="/static/boy-sisi.png" alt="Boy Sisi" class="w-full h-full object-cover">
+            </div>
+            <div class="text-xs text-on-surface space-y-1">
+                <p class="font-mono text-primary">SISI Operator Note</p>
+                <p class="text-on-surface-variant">
+                    Save changes here, then restart the console. Storage paths apply only to <em>future</em> segments — existing files stay where they were written.
+                </p>
+            </div>
+        </section>
+    </aside>
+</div>
 {% endblock %}

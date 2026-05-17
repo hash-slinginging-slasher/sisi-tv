@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sisi-TV | System Configuration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#d4e4fa",
+                    "on-tertiary-fixed-variant": "#454749",
+                    "primary-fixed": "#9cf0ff",
+                    "tertiary-fixed-dim": "#c6c6c9",
+                    "tertiary": "#ececef",
+                    "on-primary-fixed-variant": "#004f58",
+                    "inverse-on-surface": "#233143",
+                    "on-primary-fixed": "#001f24",
+                    "error-container": "#93000a",
+                    "on-tertiary-container": "#57595b",
+                    "secondary": "#ffb4aa",
+                    "on-primary": "#00363d",
+                    "inverse-surface": "#d4e4fa",
+                    "surface-container-highest": "#273647",
+                    "outline-variant": "#3b494c",
+                    "on-error": "#690005",
+                    "on-surface-variant": "#bac9cc",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-container": "#d0d0d3",
+                    "primary-fixed-dim": "#00daf3",
+                    "surface-bright": "#2c3a4c",
+                    "on-secondary": "#690003",
+                    "error": "#ffb4ab",
+                    "secondary-fixed": "#ffdad5",
+                    "tertiary-fixed": "#e2e2e5",
+                    "surface-container-lowest": "#010f1f",
+                    "background": "#051424",
+                    "surface": "#051424",
+                    "secondary-container": "#c5020b",
+                    "on-background": "#d4e4fa",
+                    "surface-container": "#122131",
+                    "surface-dim": "#051424",
+                    "primary-container": "#00e5ff",
+                    "secondary-fixed-dim": "#ffb4aa",
+                    "on-secondary-fixed-variant": "#930005",
+                    "on-tertiary-fixed": "#1a1c1e",
+                    "on-secondary-fixed": "#410001",
+                    "surface-variant": "#273647",
+                    "on-secondary-container": "#ffd2cc",
+                    "surface-container-high": "#1c2b3c",
+                    "surface-tint": "#00daf3",
+                    "surface-container-low": "#0d1c2d",
+                    "on-primary-container": "#00626e",
+                    "outline": "#849396",
+                    "primary": "#c3f5ff",
+                    "inverse-primary": "#006875",
+                    "on-tertiary": "#2f3133"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["JetBrains Mono"],
+                    "data-mono-sm": ["JetBrains Mono"],
+                    "headline-md": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "body-md": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: #051424; color: #d4e4fa; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .tactical-grid { background-image: radial-gradient(#1c2b3c 1px, transparent 1px); background-size: 24px 24px; }
+        .glow-cyan { box-shadow: 0 0 15px rgba(0, 218, 243, 0.2); }
+        .glow-red { box-shadow: 0 0 15px rgba(197, 2, 11, 0.3); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d1c2d; }
+        ::-webkit-scrollbar-thumb { background: #3b494c; border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-full w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant flex flex-col py-6 px-4 z-50">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Boy Sisi mascot holding a surveillance tablet" class="w-8 h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtSg9WQGA22FnghOS0CK0JfdCy3iXiFtoPhJhN4zznWLU7WUfBRQ1PAGB-HOO0Lm12LtFtRkaNwy9cCraJnkBILsxNPpyWEsj_0fVI2SRreqob7VnWgGID3UQbVwUoNHuu2mAAGLcqkUmqmNgAOfQ7dG50qWwh2JnwMDMBXHmL0QwmQb681vdbcU6zQU3PC2SpDjBX0sxzngKJKRGJRsui7atfHgc1ur8qRozadWrfpE14a4mmmxeq0PXho2t_BGYEYlp24WhQiOw"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tighter leading-none">Sisi-TV</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70 uppercase">Vigilant Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">grid_view</span>
+<span class="font-label-caps text-label-caps">Live Matrix</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">history</span>
+<span class="font-label-caps text-label-caps">Event History</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded text-primary border-r-2 border-primary bg-surface-container-high group active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">System Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant px-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<p class="font-data-mono-sm text-data-mono-sm text-on-surface">SYS_ADMIN</p>
+<p class="text-[10px] text-primary opacity-60">ENCRYPTED SESSION</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 left-64 right-0 h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-8 z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-primary">System Configuration</h2>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">NODE_MGMT_v2.4.0</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary-fixed-dim transition-colors cursor-pointer opacity-90 hover:opacity-100" title="Uptime Timer">timer</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary-fixed-dim transition-colors cursor-pointer opacity-90 hover:opacity-100" title="Database Status">database</button>
+<button class="material-symbols-outlined text-primary hover:text-primary-fixed-dim transition-colors cursor-pointer opacity-90 hover:opacity-100" title="Network Signal">wifi</button>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-3">
+<img alt="Boy Sisi profile avatar" class="w-8 h-8 rounded-lg border border-primary/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIuCpxp9NYoSnRjSHz7h4QhEkA80-AgA9fz-SKVusgXDMSAK64PSFk9XEUYQARS6_Lhy18cN0Sgp2skRXBPBmhC-k7rFAwUq7jb9ltHS5QPUQgMdonayieQtfXP-tWXP0R36rEsPxwB0vrtO9SsRs6OGJoQ6W6BauO5VY8z5V13eg2rvmvrwyosJo5i_U5a3tmLxsrLrJNo4X3yblHtwwQkK4JUALxoxo5JkCVaISijWX3W6jX99NVKa7rWt5c4TFggQOqtZwVw2s"/>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface">SISI_OPERATOR</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 h-screen flex tactical-grid overflow-hidden">
+<!-- Left Content Area -->
+<section class="flex-1 p-6 overflow-y-auto space-y-6">
+<!-- Camera Management Table -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">videocam</span>
+                        Camera Management
+                    </h3>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-variant hover:bg-primary-container hover:text-on-primary-container text-primary text-xs font-label-caps rounded transition-colors border border-outline-variant">EXPORT CSV</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high border-b border-outline-variant">
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">NAME</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">RTSP STRING / ENDPOINT</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">STATUS</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-md text-on-surface">Garage_North_01</td>
+<td class="px-6 py-4 font-data-mono-sm text-data-mono-sm text-primary/70">rtsp://192.168.1.104:554/live/ch0</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-container/10 text-primary border border-primary/20 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> ONLINE
+                                    </span>
+</td>
+<td class="px-6 py-4 flex gap-3">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer text-lg">edit</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer text-lg">delete</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-md text-on-surface">Main_Entrance_HQ</td>
+<td class="px-6 py-4 font-data-mono-sm text-data-mono-sm text-primary/70">rtsp://192.168.1.110:554/stream1</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-container/10 text-primary border border-primary/20 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ONLINE
+                                    </span>
+</td>
+<td class="px-6 py-4 flex gap-3">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer text-lg">edit</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer text-lg">delete</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 font-body-md text-on-surface">Perimeter_Fence_East</td>
+<td class="px-6 py-4 font-data-mono-sm text-data-mono-sm text-primary/70">rtsp://192.168.1.112:554/hd_cam</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-container/10 text-secondary border border-secondary/20 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> OFFLINE
+                                    </span>
+</td>
+<td class="px-6 py-4 flex gap-3">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer text-lg">edit</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer text-lg">delete</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Add Tactical Node Form -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">add_moderator</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Add Tactical Node</h3>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">NODE NAME</label>
+<input class="w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary transition-colors font-data-mono-sm text-data-mono-sm" placeholder="e.g. SERVER_ROOM_01" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">PROTOCOL</label>
+<select class="w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary transition-colors font-data-mono-sm text-data-mono-sm">
+<option>RTSP</option>
+<option>ONVIF</option>
+<option>HTTP/MJPEG</option>
+<option>UDP_STREAM</option>
+</select>
+</div>
+<div class="space-y-2 lg:col-span-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">NODE URL / ENDPOINT</label>
+<input class="w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 text-on-surface focus:outline-none focus:border-primary transition-colors font-data-mono-sm text-data-mono-sm" placeholder="rtsp://admin:pass@ip_address:port/path" type="text"/>
+</div>
+<div class="lg:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-outline-variant/30">
+<div class="space-y-3">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">PTZ CAPABILITIES</label>
+<div class="flex items-center gap-4">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded bg-surface-container-highest border-outline-variant text-primary focus:ring-0" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Pan/Tilt</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded bg-surface-container-highest border-outline-variant text-primary focus:ring-0" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Zoom</span>
+</label>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">SENSITIVITY (0-100)</label>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+<div class="flex items-end">
+<button class="w-full py-2 bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded hover:brightness-110 active:scale-95 transition-all glow-cyan flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">save</span>
+                                INITIALIZE NODE
+                            </button>
+</div>
+</div>
+</form>
+</div>
+</section>
+<!-- Right Side Panel: Discovery & Storage -->
+<aside class="w-80 border-l border-outline-variant bg-surface-container-low p-6 space-y-6 flex flex-col">
+<!-- Discovery Tools -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">explore</span>
+<h3 class="font-label-caps text-label-caps text-primary">DISCOVERY TOOLS</h3>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-4 text-center space-y-4">
+<div class="relative w-32 h-32 mx-auto">
+<div class="absolute inset-0 border-2 border-primary/20 rounded-full animate-ping"></div>
+<div class="absolute inset-2 border border-primary/40 rounded-full"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">radar</span>
+</div>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest leading-relaxed">Auto-scan local subnet for ONVIF compliant nodes</p>
+<button class="w-full py-4 bg-surface-container-highest text-primary border border-primary/50 font-label-caps text-label-caps rounded hover:bg-primary hover:text-on-primary transition-all active:scale-95 flex items-center justify-center gap-2 group" id="discovery-btn">
+                        RUN DISCOVERY
+                        <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform">refresh</span>
+</button>
+</div>
+</div>
+<!-- Global Storage Visualization -->
+<div class="flex-1 space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">storage</span>
+<h3 class="font-label-caps text-label-caps text-secondary">GLOBAL STORAGE</h3>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm text-secondary">82%</span>
+</div>
+<div class="bg-surface-container-high border border-outline-variant rounded-lg p-4 space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-label-caps text-on-surface-variant">
+<span>REDUNDANT_ARRAY_01</span>
+<span>14.2TB / 18.0TB</span>
+</div>
+<div class="w-full h-2 bg-surface rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-secondary-container w-[82%] shadow-[0_0_8px_rgba(197,2,11,0.5)]"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-2 bg-surface rounded border border-outline-variant/30">
+<p class="text-[9px] text-on-surface-variant font-label-caps">BITRATE</p>
+<p class="font-data-mono-sm text-data-mono-sm text-primary">245 MB/s</p>
+</div>
+<div class="p-2 bg-surface rounded border border-outline-variant/30">
+<p class="text-[9px] text-on-surface-variant font-label-caps">HEALTH</p>
+<p class="font-data-mono-sm text-data-mono-sm text-primary">OPTIMAL</p>
+</div>
+</div>
+</div>
+<!-- Boy Sisi Alert Overlay -->
+<div class="mt-6 animate-bounce-slow">
+<div class="bg-surface-container-highest border-l-4 border-primary p-4 rounded-r relative shadow-xl">
+<div class="absolute -top-4 -right-2 w-12 h-12">
+<img alt="Boy Sisi avatar" class="drop-shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCojyQiZ4NSGkG35Qx_HZvgR_VzAKdtnIIY-FsxXCv3RqkVhDVjpuTVGIZHx9ae3fIX9Y3sVvciwemKPSX8VIZSPKDy_mc8852WvovTGcekIGoQ2LR9M8d-Fg0cSZqpwSteqRcelET9QKK8bsoY6FA9Z97wrcfpsOzJqhMRy5fj_pNnaZR6SrcKTQKeGlJffEiqp5-O19QB2Vskwjhoo9oqs2LsSBRj9yPO3yl92ONa6c3hZz2b_D2F1M1ryrCvEaqqg0HXNVdtotE"/>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-tight pr-8">
+                            "System detected 2 new devices on VLAN-20. Should I initialize pairing?"
+                        </p>
+<div class="mt-3 flex gap-2">
+<button class="px-2 py-1 bg-primary text-on-primary text-[10px] font-bold rounded">INITIATE</button>
+<button class="px-2 py-1 bg-surface text-on-surface-variant text-[10px] font-bold rounded border border-outline-variant">DISMISS</button>
+</div>
+</div>
+</div>
+</div>
+<div class="text-[10px] text-on-surface-variant font-data-mono-sm opacity-50 text-center uppercase tracking-tighter">
+                LATENCY: 14ms | UPTIME: 142d 12h 04m
+            </div>
+</aside>
+</main>
+<script>
+        // Micro-interactions
+        const discoveryBtn = document.getElementById('discovery-btn');
+        discoveryBtn.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> SCANNING...';
+            this.classList.add('opacity-75');
+            this.disabled = true;
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.classList.remove('opacity-75');
+                this.disabled = false;
+                alert('Discovery complete. 0 new nodes found.');
+            }, 3000);
+        });
+
+        // Add visual flair to table rows on click
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-primary/5', 'border-l-2', 'border-primary'));
+                row.classList.add('bg-primary/5', 'border-l-2', 'border-primary');
+            });
+        });
+    </script>
+</body></html>

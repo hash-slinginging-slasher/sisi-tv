@@ -1,52 +1,124 @@
 {% extends "base.html" %}
 {% block title %}{{ camera.name }} — SISI-TV{% endblock %}
+{% block heading %}{{ camera.name }}{% endblock %}
+
 {% block content %}
-<h2>{{ camera.name }}</h2>
-<p><code>{{ camera.rtsp_url }}</code></p>
-<img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view" style="max-width: 100%; border: 1px solid #ccc;">
-<p>Record mode: <strong>{{ camera.record_mode.value }}</strong></p>
-<form method="post" action="/cameras/{{ camera.id }}/record">
-    <button type="submit">Toggle record</button>
-</form>
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+    <!-- Live feed -->
+    <div class="xl:col-span-3 bg-surface-container-low border border-outline-variant rounded-xl p-3 space-y-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                {% if camera.record_mode.value != 'off' %}
+                <span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded live-pulse">REC</span>
+                {% endif %}
+                <span class="px-2 py-0.5 bg-error text-on-error text-[10px] font-bold rounded">LIVE</span>
+                <span class="font-mono text-sm text-primary tracking-wider">CAM_{{ "%02d"|format(camera.id) }} / {{ camera.name|upper }}</span>
+            </div>
+            <a href="/grid" class="nav-label text-on-surface-variant hover:text-primary flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Matrix
+            </a>
+        </div>
+        <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-outline-variant">
+            <img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view" class="w-full h-full object-cover">
+            <div class="scanline"></div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 nav-label">
+            <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                <p class="text-on-surface-variant text-[9px]">RTSP</p>
+                <p class="font-mono text-[10px] text-on-surface truncate" title="{{ camera.rtsp_url }}">{{ camera.rtsp_url }}</p>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                <p class="text-on-surface-variant text-[9px]">RECORD MODE</p>
+                <p class="font-mono text-[10px] {% if camera.record_mode.value != 'off' %}text-secondary{% else %}text-on-surface{% endif %}">{{ camera.record_mode.value|upper }}</p>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                <p class="text-on-surface-variant text-[9px]">PTZ</p>
+                <p class="font-mono text-[10px] {% if camera.ptz_enabled %}text-primary{% else %}text-on-surface-variant{% endif %}">{% if camera.ptz_enabled %}ENABLED{% else %}DISABLED{% endif %}</p>
+            </div>
+            <div class="bg-surface-container-high border border-outline-variant rounded p-2">
+                <p class="text-on-surface-variant text-[9px]">RETENTION</p>
+                <p class="font-mono text-[10px] text-on-surface">{{ camera.retention_days }}d</p>
+            </div>
+        </div>
+    </div>
 
-{% if camera.ptz_enabled %}
-<h3>PTZ</h3>
-<div id="ptz-pad" data-camera-id="{{ camera.id }}" style="display: grid; grid-template-columns: repeat(3, 3rem); gap: 0.25rem; margin: 0.5rem 0;">
-    <span></span>
-    <button type="button" data-direction="up">↑</button>
-    <span></span>
-    <button type="button" data-direction="left">←</button>
-    <button type="button" data-direction="zoom_in" title="Zoom in">+</button>
-    <button type="button" data-direction="right">→</button>
-    <span></span>
-    <button type="button" data-direction="down">↓</button>
-    <button type="button" data-direction="zoom_out" title="Zoom out">−</button>
+    <!-- Right rail: record toggle + PTZ pad -->
+    <aside class="space-y-3">
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
+            <h4 class="font-mono text-sm text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">radio_button_checked</span>
+                Recording
+            </h4>
+            <form method="post" action="/cameras/{{ camera.id }}/record">
+                <button type="submit" class="w-full px-4 py-2 nav-label rounded-lg transition-all {% if camera.record_mode.value == 'off' %}bg-primary-container text-on-primary-container hover:shadow-[0_0_15px_rgba(0,229,255,0.4)]{% else %}bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80{% endif %}">
+                    {% if camera.record_mode.value == 'off' %}Start Recording{% else %}Stop Recording{% endif %}
+                </button>
+            </form>
+        </section>
+
+        {% if camera.ptz_enabled %}
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 space-y-3">
+            <h4 class="font-mono text-sm text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">control_camera</span>
+                PTZ Control
+            </h4>
+            <div id="ptz-pad" data-camera-id="{{ camera.id }}" class="grid grid-cols-3 gap-2">
+                <span></span>
+                <button type="button" data-direction="up" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined">arrow_upward</span>
+                </button>
+                <span></span>
+                <button type="button" data-direction="left" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <button type="button" data-direction="zoom_in" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center" title="Zoom in">
+                    <span class="material-symbols-outlined">zoom_in</span>
+                </button>
+                <button type="button" data-direction="right" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+                <span></span>
+                <button type="button" data-direction="down" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined">arrow_downward</span>
+                </button>
+                <button type="button" data-direction="zoom_out" class="aspect-square bg-surface-container-high border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center justify-center" title="Zoom out">
+                    <span class="material-symbols-outlined">zoom_out</span>
+                </button>
+            </div>
+            <p class="text-[10px] font-mono text-on-surface-variant">Press and hold to move. Release to stop.</p>
+            <script>
+            (function () {
+                const pad = document.getElementById("ptz-pad");
+                if (!pad) return;
+                const cameraId = pad.getAttribute("data-camera-id");
+                const post = (url) => fetch(url, { method: "POST" }).catch(() => {});
+                const stopUrl = `/cameras/${cameraId}/ptz/stop`;
+                pad.querySelectorAll("button[data-direction]").forEach((btn) => {
+                    const dir = btn.getAttribute("data-direction");
+                    const moveUrl = `/cameras/${cameraId}/ptz/${dir}`;
+                    const start = (event) => { event.preventDefault(); post(moveUrl); };
+                    const stop = () => post(stopUrl);
+                    btn.addEventListener("mousedown", start);
+                    btn.addEventListener("touchstart", start, { passive: false });
+                    btn.addEventListener("mouseup", stop);
+                    btn.addEventListener("mouseleave", stop);
+                    btn.addEventListener("touchend", stop);
+                    btn.addEventListener("touchcancel", stop);
+                });
+            })();
+            </script>
+        </section>
+        {% endif %}
+
+        <section class="bg-surface-container-low border border-outline-variant rounded-xl p-3 flex gap-2 items-center">
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-primary-fixed-dim/30 flex-shrink-0">
+                <img src="/static/boy-sisi.png" alt="Boy Sisi" class="w-full h-full object-cover">
+            </div>
+            <p class="text-[11px] text-on-surface-variant font-mono">
+                Toggle record to start saving segments. Active feed bandwidth shown in the matrix view.
+            </p>
+        </section>
+    </aside>
 </div>
-<script>
-(function () {
-    const pad = document.getElementById("ptz-pad");
-    if (!pad) return;
-    const cameraId = pad.getAttribute("data-camera-id");
-    const post = (url) => fetch(url, { method: "POST" }).catch(() => {});
-    const stopUrl = `/cameras/${cameraId}/ptz/stop`;
-    pad.querySelectorAll("button[data-direction]").forEach((btn) => {
-        const dir = btn.getAttribute("data-direction");
-        const moveUrl = `/cameras/${cameraId}/ptz/${dir}`;
-        const start = (event) => {
-            event.preventDefault();
-            post(moveUrl);
-        };
-        const stop = () => post(stopUrl);
-        btn.addEventListener("mousedown", start);
-        btn.addEventListener("touchstart", start, { passive: false });
-        btn.addEventListener("mouseup", stop);
-        btn.addEventListener("mouseleave", stop);
-        btn.addEventListener("touchend", stop);
-        btn.addEventListener("touchcancel", stop);
-    });
-})();
-</script>
-{% endif %}
-
-<p><a href="/">← Back to all cameras</a></p>
 {% endblock %}

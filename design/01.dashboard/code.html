@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sisi-TV | Vigilant Intelligence Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .live-pulse {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 218, 243, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        body {
+            background-color: #051424;
+            color: #d4e4fa;
+            overflow: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1c2d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b494c;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#d4e4fa",
+                      "on-tertiary-fixed-variant": "#454749",
+                      "primary-fixed": "#9cf0ff",
+                      "tertiary-fixed-dim": "#c6c6c9",
+                      "tertiary": "#ececef",
+                      "on-primary-fixed-variant": "#004f58",
+                      "inverse-on-surface": "#233143",
+                      "on-primary-fixed": "#001f24",
+                      "error-container": "#93000a",
+                      "on-tertiary-container": "#57595b",
+                      "secondary": "#ffb4aa",
+                      "on-primary": "#00363d",
+                      "inverse-surface": "#d4e4fa",
+                      "surface-container-highest": "#273647",
+                      "outline-variant": "#3b494c",
+                      "on-error": "#690005",
+                      "on-surface-variant": "#bac9cc",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-container": "#d0d0d3",
+                      "primary-fixed-dim": "#00daf3",
+                      "surface-bright": "#2c3a4c",
+                      "on-secondary": "#690003",
+                      "error": "#ffb4ab",
+                      "secondary-fixed": "#ffdad5",
+                      "tertiary-fixed": "#e2e2e5",
+                      "surface-container-lowest": "#010f1f",
+                      "background": "#051424",
+                      "surface": "#051424",
+                      "secondary-container": "#c5020b",
+                      "on-background": "#d4e4fa",
+                      "surface-container": "#122131",
+                      "surface-dim": "#051424",
+                      "primary-container": "#00e5ff",
+                      "secondary-fixed-dim": "#ffb4aa",
+                      "on-secondary-fixed-variant": "#930005",
+                      "on-tertiary-fixed": "#1a1c1e",
+                      "on-secondary-fixed": "#410001",
+                      "surface-variant": "#273647",
+                      "on-secondary-container": "#ffd2cc",
+                      "surface-container-high": "#1c2b3c",
+                      "surface-tint": "#00daf3",
+                      "surface-container-low": "#0d1c2d",
+                      "on-primary-container": "#00626e",
+                      "outline": "#849396",
+                      "primary": "#c3f5ff",
+                      "inverse-primary": "#006875",
+                      "on-tertiary": "#2f3133"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "video-aspect-ratio": "16/9",
+                      "touch-target-min": "44px",
+                      "gutter": "0.75rem",
+                      "grid-margin": "1rem"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["JetBrains Mono"],
+                      "data-mono-sm": ["JetBrains Mono"],
+                      "headline-md": ["JetBrains Mono"],
+                      "label-caps": ["JetBrains Mono"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "data-mono-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-caps": ["11px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="font-body-md flex h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="h-full w-64 fixed left-0 top-0 flex flex-col py-6 px-4 border-r border-outline-variant bg-surface-container-low z-50">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center overflow-hidden">
+<img alt="Boy Sisi mascot holding a surveillance tablet" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3ooROcPsU0fQDUAsjm5j83BaRVNVb1KkZrfwF_DgiISCn39iZFEvClox2Otgd0trcpy2ZFsfxiZ9f7ZntNAJFiP7V_Nb03XMnBb5XB_e-DJRyvQSV5tvamqRe2a5b73fNtl2I8qtdDipkgcYU1JuGW6zhR2DTTkkgFQIGNU26t4t1ypJv2I5ox8axYX3svga0SyW1dAEoupww7mjhOzr9Rr2Qj-hGKbC1iZmtOLAeqGMDqtxWIS7wySS_1HrKHT4uXTImgX1on9U"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tighter leading-none">Sisi-TV</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Vigilant Intelligence</p>
+</div>
+</div>
+<nav class="space-y-2 flex-grow">
+<!-- Dashboard Active -->
+<a class="flex items-center gap-3 px-4 py-3 text-primary border-r-2 border-primary bg-surface-container-high transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="font-label-caps text-label-caps">Live Matrix</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-caps text-label-caps">Event History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">System Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<div class="p-4 bg-surface-container-high rounded-xl border border-outline-variant flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container text-sm">security</span>
+</div>
+<div>
+<p class="font-data-mono-sm text-data-mono-sm text-on-surface">SHIELD ACTIVE</p>
+<p class="text-[10px] text-primary">v2.4.0-stable</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-grow flex flex-col relative">
+<!-- TopAppBar Anchor -->
+<header class="flex justify-between items-center h-16 px-8 border-b border-outline-variant bg-surface sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-primary">Sisi-TV</span>
+<div class="h-4 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#00daf3]"></span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary uppercase tracking-widest">System Online</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4 text-on-surface-variant">
+<button class="material-symbols-outlined hover:text-primary-fixed-dim transition-colors cursor-pointer" data-icon="timer">timer</button>
+<button class="material-symbols-outlined hover:text-primary-fixed-dim transition-colors cursor-pointer" data-icon="database">database</button>
+<button class="material-symbols-outlined hover:text-primary-fixed-dim transition-colors cursor-pointer" data-icon="wifi">wifi</button>
+</div>
+<div class="w-8 h-8 rounded-full border border-primary p-0.5 cursor-pointer hover:opacity-100 transition-opacity opacity-90">
+<img alt="Boy Sisi profile avatar" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyj1aWAdXa9rFt9yhBRUwxbsUDKj0SR8DaRVMy5aS6BjY9O8dCaur4X8sBFECzdnAyCBNKe8G_rr-KyhmIpcnnKXLd86Q0LL18Ydn7vSVvv_1tspBOcDrletbOZYjOLZ7oeMRqM_bxAANEzr6kmSGbryGepIVfpcMmjYBil8Rw7QFBUPdg5_uQ4mOrancgop9tEuMpLf1EmBb9iB7FC8cHjV8aUVG8qi1Jl0kIs9wjn4PAz_r6IVxvo723FQefUwd7RvO9EkDPehE"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-8 space-y-8 overflow-y-auto h-[calc(100vh-64px)]">
+<!-- Hero Status Card -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-surface-container-low border border-outline-variant rounded-xl p-6 relative overflow-hidden flex items-center justify-between">
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-caps text-label-caps text-primary bg-primary/10 px-2 py-0.5 rounded">STATUS: OPTIMAL</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Systems Nominal</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">All monitoring nodes are responding with latency &lt; 12ms. Sisi-TV Intelligence is actively processing feed data for behavioral patterns.</p>
+<div class="mt-6 flex gap-3">
+<button class="px-6 py-2 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all active:scale-95">Run Diagnostics</button>
+<button class="px-6 py-2 border border-outline text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-variant transition-colors">View Details</button>
+</div>
+</div>
+<div class="relative w-48 h-48 lg:w-64 lg:h-64 flex items-center justify-center">
+<img alt="High-fidelity vector of Boy Sisi mascot smiling" class="z-10 w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdc0oT7eNKCJVUAgUjwhf1geFkcj-0grd5lfxK6gt0_UZVDd9bKV9EBzRYLgwEJxZQ2-DS_hUZ8YRsgDaMYM04cPH2YPnHYdZL_Ut0-rVyPolrjjPWQu1LDYqX2t0W2n9ZzrVxGB4xL42Bk2pWEAQGpUCoi0M0p0ijrw3Y-iT_QsDPrGxlxCgs2mdrVQ09DA0wOg1sjmmN87F09RokoTM03lRsCr6TJ5Or-YKMyQYLdSK_3trMekKcOCfH6nBRd5wlV2KvogvnGqU"/>
+<div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+</div>
+</div>
+<!-- Stats Widgets Grid -->
+<div class="grid grid-cols-2 gap-4 h-full">
+<div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary" data-icon="videocam">videocam</span>
+<div>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">03</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Total Cameras</p>
+</div>
+</div>
+<div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-secondary" data-icon="notifications_active">notifications_active</span>
+<div>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">00</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Active Alerts</p>
+</div>
+</div>
+<div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary" data-icon="router">router</span>
+<div>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">99.8%</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Network Uptime</p>
+</div>
+</div>
+<div class="bg-surface-container-high border border-outline-variant p-4 rounded-xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary" data-icon="storage">storage</span>
+<div>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">1.2 TB</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Free Storage</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Live Feed Matrix -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="sensors">sensors</span>
+                        Live Feed Matrix
+                    </h3>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-container-highest rounded border border-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="grid_4x4">grid_4x4</span>
+</button>
+<button class="p-2 bg-surface-container-highest rounded border border-outline-variant text-primary">
+<span class="material-symbols-outlined" data-icon="view_kanban">view_kanban</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Feed 1: Inside -->
+<div class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" data-alt="A cinematic low-angle security camera view of a modern minimalist indoor hallway with dark grey concrete walls and sleek recessed lighting. The atmosphere is quiet and sterile, captured in a tactical high-definition aesthetic with a slight blue tint. High contrast and deep shadows emphasize the professional monitoring environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGoNdIzQ_7iZvJmItPVDrfT7y7Y7HPt18tf7G_TsXCbx9Jvo_Px5yey2WjY7NOPJ9B-ccCH3TrBcRf9N7UqGei-t4dTaBLVRkah3M4JRKZDoRddN_2k7-1FMT0kSPXCizzwN8QHZTFFLuPvX_9si-lbbNg51uO2S9CbVtRqlEZ59fuesNoPkVbPQp9MQDE01s2QepVJLJgd1HaKp2Y6iJ7LuhwP3mY3DMv3zWPq5K3bb6umVKKklw6YWW09S4A6OW07vTxwtF6LFg"/>
+<div class="scanline"></div>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="px-2 py-0.5 bg-error text-[10px] font-bold text-on-error rounded live-pulse">LIVE</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-[10px] font-bold text-white rounded border border-white/20">REC</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+<div class="bg-black/50 backdrop-blur-md px-3 py-1 rounded">
+<p class="font-data-mono-sm text-data-mono-sm text-white">CAM_01 / INSIDE</p>
+<p class="text-[10px] text-primary/80">FPS: 60 | BITRATE: 4.2MBPS</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/40 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="fullscreen">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Feed 2: Left-Rotate -->
+<div class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" data-alt="Security camera footage looking out over a dark driveway and exterior gate at night. Cool artificial streetlights cast long shadows on the wet asphalt. The perspective is from a high-mounted outdoor camera with wide-angle distortion. Minimalist tactical UI elements overlay the frame, rendered in sharp white and cyan." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9VcrajZcb4ZPCSWruUMupu3ozjF3Mngzzb5E9NOrxQEm_duK_xnd_ZIhWVkzZN6q-Lz9PBopfjvIYz80RycNjMdNrfssxl1KNcS6TlIPQxlFbtrm-dko0BoWh5TpdfRqBooBKFHJ70vFIUa84TWasKWICLqHzjVJLx0sU49Dw1CjSYcYT3RTtHdHg4ufVOxh-m33DoPliz5Y7S3W30eWlv3ZAthSRRJnHxpTacmbxGOh1wtA1Bt7x2N93uGal30YqcMlmo1H3TQA"/>
+<div class="scanline"></div>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="px-2 py-0.5 bg-error text-[10px] font-bold text-on-error rounded live-pulse">LIVE</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+<div class="bg-black/50 backdrop-blur-md px-3 py-1 rounded">
+<p class="font-data-mono-sm text-data-mono-sm text-white">CAM_02 / LEFT-ROTATE</p>
+<p class="text-[10px] text-primary/80">FPS: 30 | BITRATE: 2.1MBPS</p>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 text-white"><span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span></button>
+<button class="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 text-white"><span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Feed 3: Right-Rotate -->
+<div class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" data-alt="A wide-angle security feed of a modern dark-themed server room with rows of blue LED-lit server racks. The image is crisp, showing clear textures of cables and metal flooring. The lighting is moody and low-key, fitting a high-security facility. Tactical overlays indicate live status and object tracking capabilities." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA2h3LO9kDdATPGWnnc4R_2iO0wATVPVuodMPbEa0cbQlgMz6jCpWrnjDo6yOz79wATTWSIv0nMl_agHLYMR8qqSfK99znvB6An8vQH8nfayv0XqEpgEFj-P_kt9-PC4oAEzR4T8qTJd5So1g2TLEdViQ6gFO124jjoxbVyMvF2xjn0TEiA_9wW-ME1LR4jYDYmv7Gb2aIferaVLsqvU3ZLEqHIEGNApWTqOkDmhfItO7yV_bCeY0NOsT1KsxkbhrifKf_uCt312w"/>
+<div class="scanline"></div>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="px-2 py-0.5 bg-error text-[10px] font-bold text-on-error rounded live-pulse">LIVE</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-[10px] font-bold text-white rounded border border-white/20">REC</span>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+<div class="bg-black/50 backdrop-blur-md px-3 py-1 rounded">
+<p class="font-data-mono-sm text-data-mono-sm text-white">CAM_03 / RIGHT-ROTATE</p>
+<p class="text-[10px] text-primary/80">FPS: 60 | BITRATE: 4.8MBPS</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/40 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="mic">mic</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Sisi Intelligence Logs -->
+<section class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Sisi Intelligence Logs</h3>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+<div class="grid grid-cols-12 gap-4 p-3 border-b border-outline-variant bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant">
+<div class="col-span-2">TIMESTAMP</div>
+<div class="col-span-2">ENTITY</div>
+<div class="col-span-1">STATUS</div>
+<div class="col-span-7">EVENT DESCRIPTION</div>
+</div>
+<div class="divide-y divide-outline-variant font-data-mono-sm text-data-mono-sm">
+<!-- Log Entry 1 -->
+<div class="grid grid-cols-12 gap-4 p-4 hover:bg-surface-container-highest transition-colors items-center group">
+<div class="col-span-2 text-on-surface-variant">14:22:01.04</div>
+<div class="col-span-2 text-primary flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                CAM_01
+                            </div>
+<div class="col-span-1">
+<span class="px-2 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 text-[10px]">OK</span>
+</div>
+<div class="col-span-7 text-on-surface">Subject "Resident" entered INSIDE zone. Tracking engaged.</div>
+</div>
+<!-- Log Entry 2 -->
+<div class="grid grid-cols-12 gap-4 p-4 hover:bg-surface-container-highest transition-colors items-center">
+<div class="col-span-2 text-on-surface-variant">14:18:45.92</div>
+<div class="col-span-2 text-primary flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                CORE_AI
+                            </div>
+<div class="col-span-1">
+<span class="px-2 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 text-[10px]">OK</span>
+</div>
+<div class="col-span-7 text-on-surface">Automated daily backup completed successfully. 4.2 GB archived to Cloud-Sisi.</div>
+</div>
+<!-- Log Entry 3 -->
+<div class="grid grid-cols-12 gap-4 p-4 hover:bg-surface-container-highest transition-colors items-center">
+<div class="col-span-2 text-on-surface-variant">14:05:12.33</div>
+<div class="col-span-2 text-secondary flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                CAM_02
+                            </div>
+<div class="col-span-1">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary rounded border border-secondary/20 text-[10px]">INFO</span>
+</div>
+<div class="col-span-7 text-on-surface">Motion detected in PERIMETER zone. Filtered as "Environmental" (Wind).</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating System Tooltip (Boy Sisi Alert) -->
+<div class="fixed bottom-8 right-8 z-50 flex items-end gap-4 transform translate-y-32 transition-transform duration-500 ease-out" id="alert-popup">
+<div class="bg-surface-container-high border-2 border-primary p-4 rounded-2xl max-w-xs shadow-2xl relative">
+<p class="font-body-md text-body-md text-on-surface">
+                "Boy Sisi noticed everything is running smoothly. Your connection is encrypted and secure!"
+            </p>
+<!-- Dialogue bubble tail -->
+<div class="absolute -right-2 bottom-6 w-4 h-4 bg-surface-container-high border-r-2 border-t-2 border-primary rotate-45"></div>
+</div>
+<div class="w-16 h-16 rounded-full bg-primary-container p-1 border-2 border-primary overflow-hidden">
+<img alt="Boy Sisi avatar for dialogue alerts" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlUuPgLAEbNlVd6y0I4WA68bhMVnbortwZdEw3NSO8KLEe4XTj2gDSVm2p0RVkjhEQOPBDqplQuIl6pPLicv8cJDQ7BJjghOxO7mqN0YlJyJl1jiqEJuh11t32DTFK9VoAc19vPx77jDWm56tYylkGsMPPAmT-7d_GV-nLptPnhnEcg9fqhFIe8nk0PWNrCIzFusIHF3NR6da6uigQGAX-7iNfuVqtxwlmQ--_lZDqM81Y84Nfp5sNY5PERyE5TBV1mZtkbtFm2Bc"/>
+</div>
+</div>
+<script>
+        // Atmospheric Micro-interactions
+        window.addEventListener('DOMContentLoaded', () => {
+            // Show Sisi alert after a delay
+            setTimeout(() => {
+                const alert = document.getElementById('alert-popup');
+                alert.classList.remove('translate-y-32');
+            }, 3000);
+
+            // Mock live data updates
+            const stats = document.querySelectorAll('.font-headline-md');
+            setInterval(() => {
+                const uptime = (99.5 + Math.random() * 0.4).toFixed(1);
+                stats[2].innerText = uptime + '%';
+            }, 5000);
+
+            // Simple cursor effect on live feeds
+            const feeds = document.querySelectorAll('.group.relative.aspect-video');
+            feeds.forEach(feed => {
+                feed.addEventListener('mousemove', (e) => {
+                    const rect = feed.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    // Potential for custom UI tracking crosshairs here
+                });
+            });
+        });
+
+        // Toggle Alert Visibility on click
+        document.getElementById('alert-popup').addEventListener('click', () => {
+            const alert = document.getElementById('alert-popup');
+            alert.classList.add('translate-y-32');
+            setTimeout(() => {
+                alert.classList.remove('translate-y-32');
+            }, 10000);
+        });
+    </script>
+</body></html>

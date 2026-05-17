@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sisi-TV | Live Matrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#d4e4fa",
+                        "on-tertiary-fixed-variant": "#454749",
+                        "primary-fixed": "#9cf0ff",
+                        "tertiary-fixed-dim": "#c6c6c9",
+                        "tertiary": "#ececef",
+                        "on-primary-fixed-variant": "#004f58",
+                        "inverse-on-surface": "#233143",
+                        "on-primary-fixed": "#001f24",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#57595b",
+                        "secondary": "#ffb4aa",
+                        "on-primary": "#00363d",
+                        "inverse-surface": "#d4e4fa",
+                        "surface-container-highest": "#273647",
+                        "outline-variant": "#3b494c",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#bac9cc",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#d0d0d3",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-bright": "#2c3a4c",
+                        "on-secondary": "#690003",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#ffdad5",
+                        "tertiary-fixed": "#e2e2e5",
+                        "surface-container-lowest": "#010f1f",
+                        "background": "#051424",
+                        "surface": "#051424",
+                        "secondary-container": "#c5020b",
+                        "on-background": "#d4e4fa",
+                        "surface-container": "#122131",
+                        "surface-dim": "#051424",
+                        "primary-container": "#00e5ff",
+                        "secondary-fixed-dim": "#ffb4aa",
+                        "on-secondary-fixed-variant": "#930005",
+                        "on-tertiary-fixed": "#1a1c1e",
+                        "on-secondary-fixed": "#410001",
+                        "surface-variant": "#273647",
+                        "on-secondary-container": "#ffd2cc",
+                        "surface-container-high": "#1c2b3c",
+                        "surface-tint": "#00daf3",
+                        "surface-container-low": "#0d1c2d",
+                        "on-primary-container": "#00626e",
+                        "outline": "#849396",
+                        "primary": "#c3f5ff",
+                        "inverse-primary": "#006875",
+                        "on-tertiary": "#2f3133"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["JetBrains Mono"],
+                        "data-mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["JetBrains Mono"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "data-mono-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-caps": ["11px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .video-overlay-glass {
+            background: linear-gradient(180deg, rgba(5, 20, 36, 0.7) 0%, rgba(5, 20, 36, 0) 40%, rgba(5, 20, 36, 0) 60%, rgba(5, 20, 36, 0.7) 100%);
+            backdrop-filter: blur(2px);
+        }
+        .active-feed {
+            outline: 2px solid #00daf3;
+            outline-offset: -2px;
+        }
+        @keyframes pulsate {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        .animate-pulsate {
+            animation: pulsate 2s infinite ease-in-out;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1c2d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b494c;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<aside class="h-full w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface-container-low flex flex-col py-6 px-4 z-50">
+<div class="mb-10 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Boy Sisi mascot holding a surveillance tablet" class="w-8 h-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMe_2v-K3z91NvqV5KPGNjbWljspv8ZyWI7aPM6VPL6HWArobdEHOO9e_riNL7gl42JiOe7tjlib8EqjI1DQPhO8UOzJhNzTSzJ5NrruUDwRGBNkLb833VdkHpfnW7dVKmzHCsJUsPapDqKiHxnbLRQDumIVxS60clr4_kTBO_3zp18-p9xdh4aurR8m8IQ1cCztLbs1uevDRz_umZ4Kc0UGNAl3ZbCQggs4qSQziqoFtb45FaIvLP6PFnYHvYq1MTrInmdqEpY0w"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tighter">Sisi-TV</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Vigilant Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded text-primary border-r-2 border-primary bg-surface-container-high transition-colors duration-200 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="font-label-caps text-label-caps">Live Matrix</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-caps text-label-caps">Event History</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">System Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/30">
+<div class="flex items-center gap-3 p-2 bg-surface-container rounded-lg">
+<img alt="Boy Sisi profile avatar" class="w-8 h-8 rounded bg-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnP2WeZU8APaKpJOVq2Dwoo_sNROfBHfEbRG9W5zyQStl-FmTKCSnpF-a7rDYOo84bJ1HCLj0Wlmp3tMiXMpqm9hWN9AAZfp5aBZd6IJDjiQVBfEMHWJiVf9mhF75t5kXXhLlgXmZcF_tnjO1HTj3jOzT6dNo-Yf12n3lDooB8nKh-vxGrivrY3ZcvN0Lr8SwcWfWs1X6xq1pG4qOFYpq6xB3LNDkUEFr7GQJHW0EGw9t-KRY30qyPGAVeceRnRpgmqONu99UP7Xc"/>
+<div class="overflow-hidden">
+<p class="font-label-caps text-label-caps text-on-surface truncate">OPERATOR_01</p>
+<p class="text-[10px] font-data-mono-sm text-primary">SECURE_NODE_ALPHA</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center h-16 px-8 border-b border-outline-variant bg-surface sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-primary">Live Matrix</h2>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-pulsate"></span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary">SYSTEM_LIVE</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1 group cursor-pointer hover:text-primary-fixed-dim transition-colors" title="Sync Timer">
+<span class="material-symbols-outlined text-[18px]" data-icon="timer">timer</span>
+<span class="font-data-mono-sm text-data-mono-sm">00:04:12:88</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer hover:text-primary-fixed-dim transition-colors" title="Database Status">
+<span class="material-symbols-outlined text-[18px]" data-icon="database">database</span>
+<span class="font-data-mono-sm text-data-mono-sm">94%</span>
+</div>
+<div class="flex items-center gap-1 group cursor-pointer hover:text-primary-fixed-dim transition-colors" title="Network Load">
+<span class="material-symbols-outlined text-[18px]" data-icon="wifi">wifi</span>
+<span class="font-data-mono-sm text-data-mono-sm">240Mbps</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-on-surface" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Matrix Content Area -->
+<div class="flex-1 p-6 grid grid-cols-12 gap-4 overflow-hidden">
+<!-- Left: Primary Featured Feed -->
+<div class="col-span-8 flex flex-col gap-4">
+<div class="relative flex-1 bg-surface-container-lowest rounded-lg overflow-hidden active-feed group border border-outline-variant/30">
+<!-- Video Placeholder -->
+<img class="w-full h-full object-cover" data-alt="A high-definition security camera viewpoint overlooking a modern, high-tech server room. The perspective is from a high corner, capturing rows of glowing server racks with blinking blue and green LEDs. The floor is a polished dark grey, reflecting the technical environment. The mood is silent, secure, and professional, utilizing the Sisi-TV dark tactical aesthetic with cyan and emerald accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1jkc6209TR-HvcCW3tTtE7GQY6oP4TKxeNdR77CTpn2pyS2xjFNH4BwLuAbUIWg4A2HL8k3aO3hiGYJPR-xItioZfOxsFs8Gylmela9RznVSjBSPfq_q5P43YUwT1AOL6odGhKz5mdv_EsQPzHLwtUEA-Hn6ASG9H0BWtzT8cJGWDRCrkmqYqupR5YSlJWbSxgPpSoswP4CYAoutEylN7pA8_WDQiPH-fO12zurg45LHGrnJWsm2gG62Ce6bBapKpoT3-F6Sn2Bw"/>
+<!-- Overlays -->
+<div class="absolute inset-0 video-overlay-glass pointer-events-none p-4 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold tracking-widest animate-pulse">REC</span>
+<h3 class="font-headline-md text-headline-md text-white drop-shadow-md">MAIN_ENTRANCE_01</h3>
+</div>
+<p class="font-data-mono-sm text-data-mono-sm text-primary-fixed-dim">IP: 192.168.1.104 | 4K_HDR</p>
+</div>
+<div class="flex gap-2 pointer-events-auto">
+<button class="w-10 h-10 bg-surface-container/80 backdrop-blur rounded flex items-center justify-center text-white hover:text-primary transition-colors border border-outline-variant">
+<span class="material-symbols-outlined" data-icon="fullscreen">fullscreen</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="bg-black/40 px-3 py-2 rounded border border-white/10 backdrop-blur">
+<p class="font-data-mono-sm text-[10px] text-on-surface-variant uppercase">Telemetry</p>
+<div class="flex gap-4">
+<span class="font-data-mono-sm text-primary text-xs">FPS: 60.0</span>
+<span class="font-data-mono-sm text-primary text-xs">BITRATE: 12.4 Mbps</span>
+<span class="font-data-mono-sm text-primary text-xs">LATENCY: 14ms</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interaction Controls (Hover) -->
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform" title="Toggle Record">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-highest text-primary rounded-full shadow-lg border border-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform" title="Snapshot">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-highest text-primary rounded-full shadow-lg border border-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform" title="Microphone">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+</button>
+</div>
+</div>
+<!-- PTZ Control Bar -->
+<div class="h-24 bg-surface-container-low rounded-lg border border-outline-variant p-4 flex items-center justify-between">
+<div class="flex items-center gap-6">
+<div class="grid grid-cols-3 gap-1">
+<div></div>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"><span class="material-symbols-outlined" data-icon="arrow_drop_up">arrow_drop_up</span></button>
+<div></div>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"><span class="material-symbols-outlined" data-icon="arrow_left">arrow_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-high text-on-surface-variant cursor-default"><span class="material-symbols-outlined" data-icon="center_focus_strong">center_focus_strong</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"><span class="material-symbols-outlined" data-icon="arrow_right">arrow_right</span></button>
+<div></div>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-90"><span class="material-symbols-outlined" data-icon="arrow_drop_down">arrow_drop_down</span></button>
+<div></div>
+</div>
+<div class="h-10 w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-[10px] text-on-surface-variant">Zoom Control</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-container-highest border border-outline rounded font-data-mono-sm text-xs hover:border-primary transition-colors">OUT</button>
+<button class="px-3 py-1 bg-surface-container-highest border border-outline rounded font-data-mono-sm text-xs hover:border-primary transition-colors">IN</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant">Preset positions</p>
+<div class="flex gap-1 mt-1">
+<button class="w-6 h-6 rounded bg-surface-container-highest border border-outline-variant text-[10px] font-data-mono-sm hover:border-primary">01</button>
+<button class="w-6 h-6 rounded bg-surface-container-highest border border-outline-variant text-[10px] font-data-mono-sm hover:border-primary">02</button>
+<button class="w-6 h-6 rounded bg-surface-container-highest border border-outline-variant text-[10px] font-data-mono-sm hover:border-primary">03</button>
+</div>
+</div>
+<button class="h-12 px-6 bg-primary-container text-on-primary-container font-label-caps rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-md shadow-primary/10">
+                            AUTO SCAN
+                        </button>
+</div>
+</div>
+</div>
+<!-- Right: Secondary Feed Stack -->
+<div class="col-span-4 flex flex-col gap-4 overflow-y-auto pr-2">
+<!-- Feed Card 2 -->
+<div class="relative aspect-video bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/30 group hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover grayscale-[20%]" data-alt="CCTV view of a modern construction site at night. Tall cranes are silhouetted against a deep indigo sky. Work lights cast long, sharp shadows across raw concrete and steel beams. The scene is filtered through a technical HUD showing grid coordinates and thermal heat signatures in subtle orange and cyan. Professional security aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNGt0OvsR2dzaDP72OJy6y3SD9g9QRZpvxnTqDXrd2od3zMuAXZIzkvto7T306VXyvQb7cHHuc5gPFjgLz0GD9HV26vA1QSusXXjslLT1ulkKJOfkqijJ1712CfEr1Gw4dvszJC012mzMtN_WlacdLMFEIl4oaGWF4dpsk0ImG4lFOIwEX560xvAp54EPm_WAQ5XVuVnr7E5YIaaX19HJe9UbYRampLWt0x0bk_LH_ftZB0iTjSduu_WiHGy1Sdd3d_ykmhsWnl5w"/>
+<div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
+<div class="absolute top-2 left-2 flex items-center gap-2">
+<span class="bg-primary text-on-primary text-[8px] font-bold px-1.5 py-0.5 rounded">LIVE</span>
+<span class="font-data-mono-sm text-[10px] text-white drop-shadow">LOADING_DOCK_04</span>
+</div>
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-data-mono-sm text-[10px] text-primary-fixed-dim">30 FPS | 4.2 MBPS</span>
+</div>
+</div>
+<!-- Feed Card 3 -->
+<div class="relative aspect-video bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/30 group hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover grayscale-[20%]" data-alt="Wide-angle security camera perspective of an automated laboratory. Robotic arms are frozen in mid-motion among sleek white counters and glass vials. The room is bathed in sterile, cool blue light. A digital overlay highlight indicates 'Zone Clear' in a monospaced cyan font. Highly detailed, clean, and technically precise visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUMqQEuu4Nxv6rEuD25pTTeHH7TEJR00ZsjOURPPb9fUjz7l_TV8k3rs4TItjKujVDed0uPIyjsWltJCnytM-ElBbDcTTWuVnMWQv30gz9-bqw4if6Ly9cKFEFJI0xNB_UubpyPit0oumVPKFSg5-bwZN0qzU8tJAXrAesU6Yu4Kt6E06X8NQLp76wQM_aojyzJXsNY0eJ3aKeg89WhmI4pf7YlYsEvQp7oApUgwjInarzvWueKx5YHY5sFtXxMFFdH94MGtbPMAA"/>
+<div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
+<div class="absolute top-2 left-2 flex items-center gap-2">
+<span class="bg-primary text-on-primary text-[8px] font-bold px-1.5 py-0.5 rounded">LIVE</span>
+<span class="font-data-mono-sm text-[10px] text-white drop-shadow">LAB_CONTROL_B</span>
+</div>
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-data-mono-sm text-[10px] text-primary-fixed-dim">60 FPS | 8.1 MBPS</span>
+</div>
+</div>
+<!-- Feed Card 4 -->
+<div class="relative aspect-video bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/30 group hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover grayscale-[20%]" data-alt="Low-angle security footage of a multi-story parking garage. The fluorescent lighting creates a repetitive, geometric pattern on the concrete floor. One red sports car is parked under a bright light. The image has a slight digital noise effect and a tactical UI frame typical of high-end surveillance software. Muted colors with sharp cyan status indicators." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBALEQ0EHp8ZOKAn5PoCKZfNzJYI0t3FgQ0U4hknztKJWPAD4RyF-L93JgTCFLjYrGVYgygHpEP54G4ZsRYo7H34pg_VPUdYy_xGsTLMERGGKC44W8NZ9pqI3jjpWy9nY7NAFuMo3BwGup4DBm_NfPphlMTpzShNro6ci_iV4PIfVuS-9SaBS_BKQtREg04kh2fHuwm6mCYaOntRj9OWa-0oWU5UcDjYU_vIU818QLe5QIznWT0QA2oEKeqSg5A5dbUssrYdioX8LQ"/>
+<div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
+<div class="absolute top-2 left-2 flex items-center gap-2">
+<span class="bg-primary text-on-primary text-[8px] font-bold px-1.5 py-0.5 rounded">LIVE</span>
+<span class="font-data-mono-sm text-[10px] text-white drop-shadow">LEVEL_P2_WEST</span>
+</div>
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-data-mono-sm text-[10px] text-primary-fixed-dim">24 FPS | 2.8 MBPS</span>
+</div>
+</div>
+<!-- Feed Card 5 (Empty/Add) -->
+<button class="relative aspect-video bg-surface-container-high rounded-lg border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-3xl" data-icon="add_circle">add_circle</span>
+<span class="font-label-caps text-label-caps">Assign New Feed</span>
+</button>
+</div>
+</div>
+<!-- Boy Sisi Alert Overlay (Conditional/Mock) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-32 transition-transform duration-500 ease-out" id="motion-alert">
+<div class="bg-surface-container-high rounded-xl p-4 shadow-2xl border border-primary/30 flex items-center gap-4 max-w-sm">
+<div class="w-12 h-12 flex-shrink-0 bg-primary/20 rounded-full flex items-center justify-center">
+<img alt="Boy Sisi alert avatar" class="w-10 h-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8naHxnvmsW2sQLDbnjtWSbApVKy-fQbZEOrWCw82q_D4FjfN3pGyzbBjMhmPZPnSSGfqAW1CkedaVooguAqJuQXc6VqJ4ZuC4QpgnSXYfK7vPpyFzqOVQvHo6h4oWtdqRkf5WoJQil_OHN7JuQZbn1WGAZIEuRQSVRbPea6eXqjop-giBlzu0xIDyQaZ8SjhQtDJTxLO1-EpFcu16b5aUCRLqKAqc6-_tBu_4uZGtbMX-5S-QFecvFx_gWd5Qio4pS2jQX3o23EE"/>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-caps text-[10px] text-primary">VIGILANT_ALERT</span>
+<span class="text-[10px] font-data-mono-sm text-on-surface-variant">NOW</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface">Boy Sisi noticed movement in the <span class="text-primary font-bold">Garage</span>.</p>
+</div>
+<button class="self-start text-on-surface-variant hover:text-white" onclick="closeAlert()">
+<span class="material-symbols-outlined text-[18px]" data-icon="close">close</span>
+</button>
+</div>
+</div>
+</main>
+<script>
+        // Simulate a motion alert appearing after 3 seconds
+        setTimeout(() => {
+            const alert = document.getElementById('motion-alert');
+            alert.classList.remove('translate-y-32');
+            alert.classList.add('translate-y-0');
+        }, 3000);
+
+        function closeAlert() {
+            const alert = document.getElementById('motion-alert');
+            alert.classList.add('translate-y-32');
+            alert.classList.remove('translate-y-0');
+        }
+
+        // Micro-interaction for clicking feeds
+        document.querySelectorAll('.aspect-video').forEach(card => {
+            card.addEventListener('click', function() {
+                // In a real app, this would swap the featured feed
+                document.querySelectorAll('.active-feed').forEach(el => el.classList.remove('active-feed'));
+                this.classList.add('active-feed');
+            });
+        });
+    </script>
+</body></html>
