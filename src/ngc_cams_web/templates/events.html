@@ -18,7 +18,7 @@
         <div class="divide-y divide-outline-variant">
             {% for seg in segments %}
             {% set cam = cam_lookup.get(seg.camera_id) %}
-            <div class="grid grid-cols-12 gap-3 p-4 hover:bg-surface-container-highest transition-colors items-center">
+            <a href="/recordings/{{ seg.id }}" class="grid grid-cols-12 gap-3 p-4 hover:bg-surface-container-highest transition-colors items-center group">
                 <div class="col-span-3 font-mono text-xs">
                     <p class="text-on-surface">{{ seg.started_at.strftime('%Y-%m-%d') }}</p>
                     <p class="text-on-surface-variant">{{ seg.started_at.strftime('%H:%M:%S') }}</p>
@@ -38,10 +38,11 @@
                 <div class="col-span-2 font-mono text-xs text-on-surface-variant">
                     {% if seg.duration_seconds %}{{ seg.duration_seconds }}s{% else %}—{% endif %}
                 </div>
-                <div class="col-span-2 font-mono text-[10px] text-on-surface-variant truncate" title="{{ seg.path }}">
-                    {{ seg.path.name }}
+                <div class="col-span-2 font-mono text-[10px] text-on-surface-variant truncate flex items-center gap-1 justify-between" title="{{ seg.path }}">
+                    <span class="truncate">{{ seg.path.name }}</span>
+                    <span class="material-symbols-outlined text-primary text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">play_circle</span>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         {% else %}

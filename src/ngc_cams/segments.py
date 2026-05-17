@@ -95,6 +95,18 @@ class SegmentRepository:
             ).fetchall()
         return [self._row_to_segment(row) for row in rows]
 
+    def get_by_id(self, segment_id: int) -> StoredSegment | None:
+        with self._lock:
+            row = self._connection.execute(
+                """
+                SELECT id, camera_id, path, started_at, duration_seconds, has_audio
+                FROM recording_segments
+                WHERE id = ?
+                """,
+                (segment_id,),
+            ).fetchone()
+        return None if row is None else self._row_to_segment(row)
+
     def list_all(self) -> list[StoredSegment]:
         """All segments across cameras, oldest first. Used by the storage-cap
         enforcer that drops the oldest segments first."""
