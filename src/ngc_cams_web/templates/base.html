@@ -53,7 +53,18 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
         .live-pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
-        .scanline { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: rgba(0,218,243,0.10); pointer-events: none; animation: scan 4s linear infinite; }
+        /* Generic cyan scanline on every tile. Used to be a flat 4s animation
+           so every tile's line crossed the same Y at the same moment -- this
+           was the synchronized "scrolling down" the user noticed, independent
+           of which atmosphere filter is active. Now keyed off --feed-seed
+           (set per-tile from fib(camera_id+2)) so each tile scans at its
+           own rate AND starts at its own phase. */
+        .scanline {
+            position: absolute; left: 0; right: 0; top: 0; height: 2px;
+            background: rgba(0,218,243,0.10); pointer-events: none;
+            animation: scan calc(2.5s + var(--feed-seed, 0) * 0.7s) linear infinite;
+            animation-delay: calc(var(--feed-seed, 0) * -0.9s);
+        }
         @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0d1c2d; }

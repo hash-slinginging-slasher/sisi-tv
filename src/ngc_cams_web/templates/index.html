@@ -69,7 +69,8 @@
         {% if feed_cameras %}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {% for cam in feed_cameras %}
-            <a href="/cameras/{{ cam.id }}" class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300 block">
+            <a href="/cameras/{{ cam.id }}" class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300 block"
+               style="--feed-seed: {{ feed_seeds[cam.id] }};">
                 <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"
                      class="w-full h-full object-cover"
                      {% if cam.display_rotation %}style="transform: rotate({{ cam.display_rotation }}deg);"{% endif %}>

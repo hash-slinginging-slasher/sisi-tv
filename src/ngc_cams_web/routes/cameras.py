@@ -49,13 +49,15 @@ def index(request: Request):
         "free_storage": _free_storage_str(config.recording_root),
     }
     templates = request.app.state.templates
+    feed_cameras = cameras[:DASHBOARD_FEED_LIMIT]
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "active_nav": "dashboard",
             "cameras": cameras,
-            "feed_cameras": cameras[:DASHBOARD_FEED_LIMIT],
+            "feed_cameras": feed_cameras,
+            "feed_seeds": {cam.id: feed_seed(cam.id) for cam in feed_cameras},
             "stats": stats,
             "recent_segments": recent_segments,
             "cam_lookup": cam_lookup,
