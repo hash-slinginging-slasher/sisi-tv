@@ -34,7 +34,6 @@ def main() -> int:
         cameras=cameras,
         discovery=discovery,
         recording_manager=recording,
-        live_stream_manager=None,
         lifespan_poll_seconds=1.0,
     )
 

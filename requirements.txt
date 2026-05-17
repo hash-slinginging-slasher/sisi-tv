@@ -1,5 +1,6 @@
-PyQt6>=6.7
 onvif-zeep>=0.2.12
-python-vlc>=3.0.20123
 wsdiscovery>=2.1.2
-
+fastapi>=0.115
+uvicorn[standard]>=0.32
+jinja2>=3.1
+python-multipart>=0.0.12

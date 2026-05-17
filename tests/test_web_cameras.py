@@ -19,7 +19,6 @@ def _build():
         cameras=repo,
         discovery=None,
         recording_manager=None,
-        live_stream_manager=None,
     )
     return app, repo
 
@@ -96,7 +95,6 @@ def _build_with_manager():
         cameras=repo,
         discovery=None,
         recording_manager=spy,
-        live_stream_manager=None,
     )
     return app, repo, spy
 

@@ -51,7 +51,6 @@ def build_app(
     cameras: CameraRepository,
     discovery: DiscoveryService | None,
     recording_manager,
-    live_stream_manager,
     lifespan_poll_seconds: float | None = None,
 ) -> FastAPI:
     lifespan = (
@@ -63,7 +62,6 @@ def build_app(
     app.state.cameras = cameras
     app.state.discovery = discovery
     app.state.recording_manager = recording_manager
-    app.state.live_stream_manager = live_stream_manager
     app.state.templates = Jinja2Templates(directory=str(_TEMPLATE_DIR))
 
     @app.get("/healthz")

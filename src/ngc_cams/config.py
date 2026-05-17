@@ -14,6 +14,3 @@ class AppConfig:
     db_path: Path = field(
         default_factory=lambda: Path(r"D:\ngc-cams-recordings\ngc-cams.sqlite3")
     )
-    vlc_log_path: Path = field(
-        default_factory=lambda: Path(r"D:\ngc-cams-recordings\logs\vlc-stderr.log")
-    )

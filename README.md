@@ -1,8 +1,8 @@
 # ngc-cams
 
-ONVIF Camera Manager is a personal Windows desktop app for discovering ONVIF cameras, resolving RTSP URLs, viewing live streams, controlling PTZ, and recording segments with optional audio.
+ONVIF Camera Manager is a personal Windows app for discovering ONVIF cameras, resolving RTSP URLs, viewing live streams, controlling PTZ, and recording segments with optional audio. The UI is a local FastAPI + HTMX web app on `127.0.0.1:8000` driven by `ngc-cams-web`.
 
-The product scope is captured in `odm-replacement-prd_1.md`.
+The product scope is captured in `odm-replacement-prd_1.md`. The implementation pivot from Qt to a web UI is recorded in `kanban-to.md` and `docs/plans/2026-05-17-web-pivot.md`.
 
 ## Development
 
@@ -10,8 +10,8 @@ The product scope is captured in `odm-replacement-prd_1.md`.
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-python -m ngc_cams
-pytest
+ngc-cams-web              # launch on 127.0.0.1:8000, opens browser
+pytest                    # run the whole suite
 ```
 
 If a globally installed pytest plugin fails before collection, run tests with plugin autoload disabled:

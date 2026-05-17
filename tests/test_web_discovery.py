@@ -29,7 +29,6 @@ def _build(discovery):
         cameras=repo,
         discovery=discovery,
         recording_manager=None,
-        live_stream_manager=None,
     )
 
 

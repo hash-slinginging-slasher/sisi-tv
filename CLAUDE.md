@@ -38,7 +38,7 @@ The package lives under `src/ngc_cams/` with the layout enforced by `AGENTS.md`.
 - `ngc_cams.models` — `Camera` / `StoredCamera` dataclasses (frozen) and the `RecordMode` `StrEnum` (`off` / `video_only` / `video_audio`) whose values match the DB CHECK constraint. Adding a mode requires updating both.
 - `ngc_cams.config` — `AppConfig` defaults including `recording_root=D:\ngc-cams-recordings`, `snapshot_root=D:\ngc-cams-snapshots`, 600 s segments, 7-day retention. Keep these paths configurable; do not hardcode them elsewhere.
 
-`tests/` mirrors `src/` and currently exercises DB schema/repo, ffmpeg command construction, recording paths, and discovery (with an injected fake `wsdiscovery_class`). When extending discovery, ONVIF, VLC, or ffmpeg code, follow the same pattern: mock the network / subprocess boundary rather than the real device.
+`tests/` mirrors `src/` and currently exercises DB schema/repo, ffmpeg command construction, recording paths, discovery (with an injected fake `wsdiscovery_class`), and the FastAPI routes via `TestClient` with fakes attached to `app.state`. When extending discovery, ONVIF, ffmpeg, or web routes, follow the same pattern: mock the network / subprocess boundary rather than the real device.
 
 ## Conventions
 

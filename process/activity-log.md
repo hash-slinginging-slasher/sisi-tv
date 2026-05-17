@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Post-pivot doc + dead-state cleanup
+**Files Changed:** `requirements.txt`, `README.md`, `AGENTS.md`, `CLAUDE.md`, `src/ngc_cams/config.py`, `tests/test_config.py`, `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/__main__.py`, `tests/test_web_cameras.py`, `tests/test_web_live_route.py`, `tests/test_web_discovery.py`, `tests/test_web_composition.py`
+
+- Final-review found stale Qt/libvlc references that Task 15 missed. Updated `requirements.txt` to the actual runtime deps (FastAPI + uvicorn + jinja2 + python-multipart + onvif-zeep + wsdiscovery). Rewrote `README.md` to describe the FastAPI web UI and the `ngc-cams-web` launch command. Updated `AGENTS.md` layout, commands, and testing-pattern guidance to drop PyQt6/libvlc vocabulary. Trimmed the "VLC" mention from `CLAUDE.md`'s testing paragraph.
+- Removed `AppConfig.vlc_log_path` (libvlc no longer ships); deleted its two tests in `test_config.py`.
+- Removed the always-`None` `live_stream_manager` parameter from `build_app` and its callers — was dead state never consumed by any route.
+
+**Deployment:** Not deployed
+**Test Results:** 74/74 passed
+
+---
+
 ### Remove Qt UI and PyQt6/python-vlc deps (web pivot Task 15)
 **Files Changed:** `pyproject.toml`, `CLAUDE.md`, `kanban-to.md`, deleted: `src/ngc_cams/ui/`, `src/ngc_cams/app.py`, `src/ngc_cams/vlc_logging.py`, `src/ngc_cams/__main__.py`, `tests/test_camera_form.py`, `tests/test_vlc_logging.py`
 

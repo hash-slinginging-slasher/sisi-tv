@@ -49,7 +49,6 @@ def _build_with_fake_ffmpeg(payload: bytes):
         cameras=repo,
         discovery=None,
         recording_manager=None,
-        live_stream_manager=None,
     )
     app.state.live_popen_factory = fake_popen
     app.state.live_ffmpeg_resolver = lambda: "/usr/bin/ffmpeg"

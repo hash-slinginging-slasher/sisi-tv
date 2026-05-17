@@ -29,7 +29,6 @@ def _build_test_app():
         cameras=repository,
         discovery=discovery,
         recording_manager=None,
-        live_stream_manager=None,
     )
     return app, repository, discovery
 
