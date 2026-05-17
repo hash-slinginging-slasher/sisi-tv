@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Cameras — ngc-cams{% endblock %}
+{% block content %}
+<h2>Cameras</h2>
+{% if cameras %}
+<table>
+    <thead><tr><th>Name</th><th>RTSP</th><th>Record</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for cam in cameras %}
+        <tr>
+            <td><a href="/cameras/{{ cam.id }}">{{ cam.name }}</a></td>
+            <td><code>{{ cam.rtsp_url }}</code></td>
+            <td>{{ cam.record_mode.value }}</td>
+            <td>
+                <form class="inline" method="post" action="/cameras/{{ cam.id }}/record">
+                    <button type="submit">Toggle record</button>
+                </form>
+                <form class="inline" method="post" action="/cameras/{{ cam.id }}/delete">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">No cameras yet. Add one below.</p>
+{% endif %}
+
+<h3>Add camera</h3>
+<form method="post" action="/cameras/add">
+    <label>Name <input name="name" required></label>
+    <label>RTSP URL <input name="rtsp_url" required size="50"></label>
+    <button type="submit">Add</button>
+</form>
+
+<h3>Discover</h3>
+<button hx-post="/discover" hx-target="#discovered" hx-swap="innerHTML">Run discovery</button>
+<div id="discovered"></div>
+{% endblock %}

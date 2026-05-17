@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}ngc-cams{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 960px; margin: 1.5rem auto; padding: 0 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #ddd; }
+        form.inline { display: inline; }
+        .empty { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1><a href="/">ngc-cams</a></h1>
+    {% block content %}{% endblock %}
+</body>
+</html>
