@@ -82,6 +82,15 @@ def _ordered_cameras(cameras_list, saved_order):
     return ordered
 
 
+FEED_FILTERS = ("normal", "fnaf", "static", "vhs", "mgs")
+
+
+def _coerce_feed_filter(value) -> str:
+    if isinstance(value, str) and value in FEED_FILTERS:
+        return value
+    return "normal"
+
+
 @router.get("/grid", response_class=HTMLResponse)
 def grid(request: Request):
     from ngc_cams import settings_store
@@ -97,6 +106,7 @@ def grid(request: Request):
         columns = int(columns_raw)
     else:
         columns = "auto"
+    feed_filter = _coerce_feed_filter(stored.get("feed_filter"))
     visible = _ordered_cameras(cameras, order)
     templates = request.app.state.templates
     return templates.TemplateResponse(
@@ -106,6 +116,8 @@ def grid(request: Request):
             "active_nav": "matrix",
             "visible": visible,
             "columns": columns,
+            "feed_filter": feed_filter,
+            "feed_filters": FEED_FILTERS,
         },
     )
 
@@ -128,6 +140,9 @@ async def save_grid_layout(request: Request):
         update["grid_columns"] = raw_cols
     elif isinstance(raw_cols, str) and raw_cols.isdigit() and 1 <= int(raw_cols) <= 8:
         update["grid_columns"] = int(raw_cols)
+    raw_filter = body.get("feed_filter")
+    if isinstance(raw_filter, str) and raw_filter in FEED_FILTERS:
+        update["feed_filter"] = raw_filter
     if not update:
         raise HTTPException(status_code=400, detail="nothing to save")
     existing = settings_store.load()
@@ -245,6 +260,8 @@ def edit_camera(
 
 @router.get("/cameras/{camera_id}", response_class=HTMLResponse)
 def camera_detail(request: Request, camera_id: int):
+    from ngc_cams import settings_store
+
     stored = request.app.state.cameras.get(camera_id)
     if stored is None:
         raise HTTPException(status_code=404, detail="Camera not found")
@@ -261,9 +278,14 @@ def camera_detail(request: Request, camera_id: int):
         except OSError:
             files = []
         snapshots = [f.name for f in files[:SNAPSHOT_GALLERY_LIMIT]]
+    feed_filter = _coerce_feed_filter(settings_store.load().get("feed_filter"))
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request,
         "camera_detail.html",
-        {"camera": stored, "snapshots": snapshots},
+        {
+            "camera": stored,
+            "snapshots": snapshots,
+            "feed_filter": feed_filter,
+        },
     )

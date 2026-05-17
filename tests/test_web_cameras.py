@@ -504,3 +504,67 @@ def test_post_grid_layout_rejects_out_of_range_columns(tmp_path, monkeypatch):
     with TestClient(app) as client:
         response = client.post("/grid/layout", json={"columns": 99})
     assert response.status_code == 400
+
+
+def test_post_grid_layout_persists_feed_filter(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, _ = _build()
+    with TestClient(app) as client:
+        response = client.post("/grid/layout", json={"feed_filter": "vhs"})
+    assert response.status_code == 200
+    assert settings_store.load()["feed_filter"] == "vhs"
+
+
+def test_post_grid_layout_rejects_unknown_filter(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, _ = _build()
+    with TestClient(app) as client:
+        # Unknown filter value gets silently dropped; since nothing else is
+        # in the body, the endpoint replies 400 "nothing to save".
+        response = client.post("/grid/layout", json={"feed_filter": "matrix"})
+    assert response.status_code == 400
+    assert "feed_filter" not in settings_store.load()
+
+
+def test_grid_applies_saved_feed_filter_class(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    settings_store.save({"feed_filter": "fnaf"})
+    app, repo = _build()
+    repo.add(Camera(name="Cam", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    assert response.status_code == 200
+    assert "fnaf-filter" in response.text
+    # Dropdown selection reflects the saved value.
+    assert 'value="fnaf" selected' in response.text
+
+
+def test_grid_filter_dropdown_renders_all_options(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    app, repo = _build()
+    repo.add(Camera(name="Cam", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        response = client.get("/grid")
+    for opt in ("normal", "fnaf", "static", "vhs", "mgs"):
+        assert f'value="{opt}"' in response.text
+
+
+def test_camera_detail_applies_saved_feed_filter(tmp_path, monkeypatch):
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    settings_store.save({"feed_filter": "mgs"})
+    app, repo = _build()
+    stored = repo.add(Camera(name="Cam", rtsp_url="rtsp://x/main"))
+    with TestClient(app) as client:
+        response = client.get(f"/cameras/{stored.id}")
+    assert response.status_code == 200
+    assert "mgs-filter" in response.text

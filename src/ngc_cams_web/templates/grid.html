@@ -3,8 +3,8 @@
 {% block heading %}Live Matrix{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-3">
-    <div class="flex items-center gap-3">
+<div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+    <div class="flex items-center gap-3 flex-wrap">
         <span class="nav-label text-on-surface-variant">Layout:</span>
         <select id="columns-select" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 font-mono text-xs text-on-surface focus:border-primary focus:outline-none">
             <option value="auto" {% if columns == 'auto' %}selected{% endif %}>Auto</option>
@@ -12,7 +12,15 @@
             <option value="{{ n }}" {% if columns == n %}selected{% endif %}>{{ n }} column{{ 's' if n > 1 }}</option>
             {% endfor %}
         </select>
-        <span id="layout-hint" class="nav-label text-on-surface-variant text-[10px]">Drag tiles to reorder. Explicit column counts fill the viewport.</span>
+        <span class="nav-label text-on-surface-variant">Atmosphere:</span>
+        <select id="filter-select" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 font-mono text-xs text-primary focus:border-primary focus:outline-none">
+            <option value="normal" {% if feed_filter == 'normal' %}selected{% endif %}>Normal</option>
+            <option value="fnaf" {% if feed_filter == 'fnaf' %}selected{% endif %}>FNAF</option>
+            <option value="static" {% if feed_filter == 'static' %}selected{% endif %}>Static</option>
+            <option value="vhs" {% if feed_filter == 'vhs' %}selected{% endif %}>VHS</option>
+            <option value="mgs" {% if feed_filter == 'mgs' %}selected{% endif %}>Metal Gear Solid</option>
+        </select>
+        <span id="layout-hint" class="nav-label text-on-surface-variant text-[10px]">Drag tiles to reorder. Filter applies to every feed.</span>
     </div>
     <span class="nav-label text-on-surface-variant">{{ visible|length }} feed{{ 's' if visible|length != 1 }}</span>
 </div>
@@ -40,20 +48,21 @@
     {% for cam in visible %}
     <div data-camera-id="{{ cam.id }}"
          draggable="true"
-         class="grid-tile group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
+         class="grid-tile filter-container {% if feed_filter != 'normal' %}{{ feed_filter }}-filter{% endif %} group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
         <a href="/cameras/{{ cam.id }}" class="block w-full h-full">
             <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"
                  class="w-full h-full object-cover pointer-events-none"
                  {% if cam.display_rotation %}style="transform: rotate({{ cam.display_rotation }}deg);{% if cam.display_rotation in [90, 270] %} transform-origin: center;{% endif %}"{% endif %}>
         </a>
+        {% include "_feed_filter_overlays.html" %}
         <div class="scanline pointer-events-none"></div>
-        <div class="absolute top-2 left-2 flex gap-1 pointer-events-none">
+        <div class="absolute top-2 left-2 flex gap-1 pointer-events-none z-40">
             <span class="px-1.5 py-0.5 bg-error text-on-error text-[9px] font-bold rounded">LIVE</span>
             {% if cam.record_mode.value != 'off' %}
             <span class="px-1.5 py-0.5 bg-black/60 backdrop-blur-md text-secondary text-[9px] font-bold rounded border border-secondary/40">REC</span>
             {% endif %}
         </div>
-        <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none">
+        <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none z-40">
             <p class="font-mono text-[10px] text-white bg-black/60 backdrop-blur-md px-2 py-0.5 rounded tracking-wider truncate">
                 CAM_{{ "%02d"|format(cam.id) }} / {{ cam.name|upper }}
             </p>
@@ -105,6 +114,21 @@
                 container.style.gridTemplateColumns = `repeat(${value}, minmax(0, 1fr))`;
                 persist({columns: parseInt(value, 10)});
             }
+        });
+    }
+
+    // Atmosphere filter selector — applies the *-filter class to every tile
+    // and persists so the choice survives reload (and applies on detail page).
+    const filterSelect = document.getElementById('filter-select');
+    if (filterSelect) {
+        const FILTERS = ['fnaf', 'static', 'vhs', 'mgs'];
+        filterSelect.addEventListener('change', () => {
+            const value = filterSelect.value;
+            container.querySelectorAll('.grid-tile').forEach(tile => {
+                FILTERS.forEach(f => tile.classList.remove(`${f}-filter`));
+                if (value !== 'normal') tile.classList.add(`${value}-filter`);
+            });
+            persist({feed_filter: value});
         });
     }
 
