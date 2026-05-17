@@ -46,9 +46,14 @@
             height: calc(100vh - 9rem);">
 {% endif %}
     {% for cam in visible %}
+    {# Each tile gets a stable seed (from camera.id) used to desync filter
+       animations, plus a "degraded" variant for every 3rd camera so the
+       group looks like a real camera array -- some clean, some glitching. #}
+    {% set variant = 'variant-degraded' if (cam.id % 3 == 0) else 'variant-stable' %}
     <div data-camera-id="{{ cam.id }}"
          draggable="true"
-         class="grid-tile filter-container {% if feed_filter != 'normal' %}{{ feed_filter }}-filter{% endif %} group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
+         style="--feed-seed: {{ cam.id }};"
+         class="grid-tile filter-container {% if feed_filter != 'normal' %}{{ feed_filter }}-filter {{ variant }}{% endif %} group relative bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-colors cursor-move {% if columns == 'auto' %}aspect-video{% else %}min-h-0{% endif %}">
         <a href="/cameras/{{ cam.id }}" class="block w-full h-full">
             <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"
                  class="w-full h-full object-cover pointer-events-none"
@@ -119,6 +124,8 @@
 
     // Atmosphere filter selector — applies the *-filter class to every tile
     // and persists so the choice survives reload (and applies on detail page).
+    // Per-tile variant-stable / variant-degraded classes stay put so the
+    // "every 3rd camera is glitching" effect persists across filter changes.
     const filterSelect = document.getElementById('filter-select');
     if (filterSelect) {
         const FILTERS = ['fnaf', 'static', 'vhs', 'mgs'];
@@ -126,6 +133,11 @@
             const value = filterSelect.value;
             container.querySelectorAll('.grid-tile').forEach(tile => {
                 FILTERS.forEach(f => tile.classList.remove(`${f}-filter`));
+                // Ensure the tile has the right variant class regardless of which
+                // filter is active (variants are no-ops in Normal mode).
+                const camId = parseInt(tile.dataset.cameraId, 10);
+                tile.classList.remove('variant-stable', 'variant-degraded');
+                tile.classList.add(camId % 3 === 0 ? 'variant-degraded' : 'variant-stable');
                 if (value !== 'normal') tile.classList.add(`${value}-filter`);
             });
             persist({feed_filter: value});

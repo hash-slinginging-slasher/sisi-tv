@@ -568,3 +568,47 @@ def test_camera_detail_applies_saved_feed_filter(tmp_path, monkeypatch):
         response = client.get(f"/cameras/{stored.id}")
     assert response.status_code == 200
     assert "mgs-filter" in response.text
+
+
+def test_grid_tiles_get_distinct_variants_and_seeds(tmp_path, monkeypatch):
+    """Every 3rd camera goes into variant-degraded so the feed wall doesn't
+    flicker in lockstep. The per-tile --feed-seed is the camera id."""
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    settings_store.save({"feed_filter": "fnaf"})
+    app, repo = _build()
+    for i in range(6):
+        repo.add(Camera(name=f"Cam{i+1}", rtsp_url=f"rtsp://x/{i}"))
+
+    with TestClient(app) as client:
+        response = client.get("/grid")
+
+    # The variant class is followed by " group" in the tile's class attribute,
+    # which uniquely anchors it to a tile (vs the CSS rules / JS strings that
+    # also contain "variant-degraded").
+    # camera_id 3 and 6 (id % 3 == 0) should be degraded; the rest stable.
+    assert response.text.count("variant-degraded group") == 2
+    assert response.text.count("variant-stable group") == 4
+    # Each tile has a unique --feed-seed wired to its camera id.
+    for cam_id in range(1, 7):
+        assert f"--feed-seed: {cam_id};" in response.text
+
+
+def test_grid_omits_variant_class_when_filter_normal(tmp_path, monkeypatch):
+    """variant-* classes are only meaningful inside a filter; in Normal mode
+    they shouldn't show up in the *tile* markup so we don't waste CSS work."""
+    from ngc_cams import settings_store
+    monkeypatch.setattr(settings_store, "default_settings_path",
+                        lambda: tmp_path / "settings.json")
+    # Default settings -> feed_filter=normal
+    app, repo = _build()
+    repo.add(Camera(name="Cam1", rtsp_url="rtsp://x/1"))
+
+    with TestClient(app) as client:
+        response = client.get("/grid")
+
+    # Anchored substrings: variant followed by " group" only appears inside
+    # a tile's class attribute when the filter is active.
+    assert "variant-degraded group" not in response.text
+    assert "variant-stable group" not in response.text

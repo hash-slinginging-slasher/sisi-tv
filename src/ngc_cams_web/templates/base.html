@@ -62,7 +62,11 @@
         .nav-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 
         /* === Atmospheric Camera Filters (design 05) === */
-        .filter-container { position: relative; overflow: hidden; }
+        /* Per-tile desync: each filter-container exposes a --feed-seed custom
+           property (set inline from the camera id). Negative animation-delay
+           values seeded from it stagger flickers/scans/noise/tracking lines
+           so cameras don't move in lockstep. */
+        .filter-container { position: relative; overflow: hidden; --feed-seed: 0; }
         .filter-container .fnaf-overlay,
         .filter-container .static-overlay,
         .filter-container .vhs-overlay,
@@ -72,12 +76,14 @@
         .filter-container .low-batt,
         .filter-container .rec-text { display: none; }
 
-        /* FNAF */
+        /* === FNAF === */
         .fnaf-filter img { filter: sepia(0.5) hue-rotate(80deg) brightness(0.7) contrast(1.2); }
         .fnaf-filter .fnaf-overlay {
             display: block; position: absolute; inset: 0; pointer-events: none;
             background: radial-gradient(circle, transparent 40%, rgba(0,20,0,0.8) 100%);
-            animation: feed-flicker 0.1s infinite; z-index: 10;
+            animation: feed-flicker 0.1s infinite;
+            animation-delay: calc(var(--feed-seed) * -0.13s);
+            z-index: 10;
         }
         .fnaf-filter::after {
             content: ''; position: absolute; inset: 0; pointer-events: none;
@@ -92,10 +98,28 @@
             display: block; color: #0f0; font-family: 'JetBrains Mono', monospace;
             font-size: 10px; position: absolute; top: 8px; right: 8px; z-index: 35;
             animation: low-batt-blink 1s steps(1) infinite;
+            animation-delay: calc(var(--feed-seed) * -0.31s);
+        }
+        /* FNAF degraded: heavier vignette + occasional camera-out blackout */
+        .fnaf-filter.variant-degraded img {
+            filter: sepia(0.7) hue-rotate(80deg) brightness(0.35) contrast(1.5);
+        }
+        .fnaf-filter.variant-degraded .fnaf-overlay {
+            animation: feed-flicker 0.08s infinite, fnaf-blackout 9s infinite;
+            animation-delay: calc(var(--feed-seed) * -0.13s), calc(var(--feed-seed) * -1.1s);
+        }
+        @keyframes fnaf-blackout {
+            0%,84%,100% { background: radial-gradient(circle, transparent 40%, rgba(0,20,0,0.8) 100%); }
+            85%,93% { background: rgba(0,0,0,0.96); }
+            94%,99% { background: radial-gradient(circle, rgba(20,0,0,0.6) 0%, rgba(0,0,0,0.95) 100%); }
         }
 
-        /* Static */
-        .static-filter img { filter: grayscale(1) contrast(1.8) brightness(0.9); animation: feed-jitter 0.2s infinite; }
+        /* === Static === */
+        .static-filter img {
+            filter: grayscale(1) contrast(1.8) brightness(0.9);
+            animation: feed-jitter 0.2s infinite;
+            animation-delay: calc(var(--feed-seed) * -0.07s);
+        }
         @keyframes feed-jitter {
             0% { transform: translateX(0); } 10% { transform: translateX(1px); }
             20% { transform: translateX(-1px); } 30% { transform: translateX(0); }
@@ -105,6 +129,7 @@
             background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
             opacity: 0.15; z-index: 25; mix-blend-mode: overlay;
             animation: feed-noise 0.1s steps(2) infinite;
+            animation-delay: calc(var(--feed-seed) * -0.05s);
         }
         @keyframes feed-noise {
             0%,100% { transform: translate(0,0); }
@@ -112,8 +137,14 @@
             50% { transform: translate(2%,2%); }
             75% { transform: translate(-1%,1%); }
         }
+        /* Static degraded: blown-out dead channel */
+        .static-filter.variant-degraded img {
+            filter: grayscale(1) contrast(3) brightness(0.5);
+            animation-duration: 0.08s;
+        }
+        .static-filter.variant-degraded .static-overlay { opacity: 0.55; }
 
-        /* VHS */
+        /* === VHS === */
         .vhs-filter img { filter: sepia(0.3) contrast(1.1) brightness(0.9) saturate(1.2); }
         .vhs-filter .vhs-overlay {
             display: block; position: absolute; inset: 0; pointer-events: none; z-index: 20;
@@ -125,6 +156,7 @@
             display: block; position: absolute; width: 100%; height: 4px;
             background: rgba(255,255,255,0.1); filter: blur(1px); z-index: 21;
             animation: feed-tracking 8s linear infinite;
+            animation-delay: calc(var(--feed-seed) * -0.83s);
         }
         @keyframes feed-tracking {
             0% { transform: translateY(-100%); } 100% { transform: translateY(100%); }
@@ -133,8 +165,22 @@
             display: block; color: #f00; font-family: 'Courier New', monospace; font-weight: bold;
             position: absolute; top: 8px; left: 40px; z-index: 22; text-shadow: 2px 2px #000;
         }
+        /* VHS degraded: heavy red-shift + faster tracking + thicker bands */
+        .vhs-filter.variant-degraded img {
+            filter: sepia(0.6) contrast(1.3) brightness(0.7) saturate(2) hue-rotate(-10deg);
+        }
+        .vhs-filter.variant-degraded .vhs-overlay {
+            background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.3) 50%),
+                        linear-gradient(90deg, rgba(255,0,0,0.15), rgba(0,255,0,0.02), rgba(0,255,0,0.12));
+            background-size: 100% 5px, 5px 100%;
+        }
+        .vhs-filter.variant-degraded .tracking-line {
+            animation-duration: 2.5s;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+        }
 
-        /* Metal Gear Solid */
+        /* === Metal Gear Solid === */
         .mgs-filter img {
             filter: sepia(1) hue-rotate(60deg) saturate(2) brightness(0.8) contrast(1.1);
             image-rendering: pixelated;
@@ -156,8 +202,23 @@
             width: 50px; height: 50px; border: 1px solid #00ff66;
             background: rgba(0,255,100,0.05); border-radius: 2px;
             animation: mgs-scan 2s infinite;
+            animation-delay: calc(var(--feed-seed) * -0.27s);
         }
         @keyframes mgs-scan { 0%,100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+        /* MGS degraded: enemy-sighted red pulse + connection-lost overlay */
+        .mgs-filter.variant-degraded img {
+            filter: sepia(1) hue-rotate(-20deg) saturate(2.5) brightness(0.6) contrast(1.2);
+        }
+        .mgs-filter.variant-degraded::after {
+            content: 'CONNECTION LOST'; position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #ff3030; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+            font-size: 14px; letter-spacing: 0.2em; text-shadow: 2px 2px 0 rgba(0,0,0,0.9);
+            z-index: 28; pointer-events: none;
+            animation: mgs-enemy-pulse 1.4s infinite;
+            animation-delay: calc(var(--feed-seed) * -0.37s);
+        }
+        @keyframes mgs-enemy-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex">
