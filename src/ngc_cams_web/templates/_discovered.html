@@ -1,0 +1,15 @@
+{% if error %}
+<p class="empty">Discovery failed: {{ error }}</p>
+{% elif cameras %}
+<ul>
+{% for cam in cameras %}
+    <li>
+        <strong>{{ cam.address }}</strong>
+        {% if cam.manufacturer %} — {{ cam.manufacturer }}{% endif %}
+        {% if cam.main_rtsp_url %}<br><code>{{ cam.main_rtsp_url }}</code>{% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="empty">No cameras discovered on this network.</p>
+{% endif %}

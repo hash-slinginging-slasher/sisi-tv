@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Discover route (POST /discover) returning HTMX partial
+**Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/discovery.py`, `src/ngc_cams_web/templates/_discovered.html`, `tests/test_web_discovery.py`
+
+- New `POST /discover` route in a sibling `routes.discovery` module; runs `run_discovery(service, timeout=5)` and renders `_discovered.html` as a fragment (no `<html>` wrapper) so HTMX swaps it into `#discovered` on the index page (web-pivot Task 9).
+- Partial handles three states: discovery error, non-empty list (with optional manufacturer / main RTSP URL), and empty state.
+- TestClient tests cover all three branches with duck-typed fakes.
+
+**Deployment:** Not deployed
+**Test Results:** 84/84 passed
+
+---
+
 ### Toggle-record route (POST /cameras/{id}/record)
 **Files Changed:** `src/ngc_cams_web/routes/cameras.py`, `tests/test_web_cameras.py`
 
