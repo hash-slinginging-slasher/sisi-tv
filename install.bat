@@ -79,6 +79,20 @@ goto :done
 echo [WARN] Could not create C:\sisi-tv-storage automatically.
 echo        Either run install.bat from an elevated prompt, or open the
 echo        Settings page after launch to point recording_root somewhere writable.
+goto :startup
+
+:startup
+REM --- 6. Auto-start on login ----------------------------------------------
+echo.
+echo Creating Startup-folder shortcut so SISI-TV launches at login ...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\create-startup-shortcut.ps1"
+if errorlevel 1 (
+    echo [WARN] Could not create the autostart shortcut. You can re-run
+    echo        scripts\create-startup-shortcut.ps1 manually later, or skip
+    echo        autostart entirely.
+) else (
+    echo [ OK ] Autostart configured: each login will git pull and launch SISI-TV.
+)
 goto :done
 
 :done
@@ -87,16 +101,17 @@ echo ============================================
 echo   Install complete.
 echo ============================================
 echo.
-echo Launch SISI-TV with:
-echo.
+echo Launch now with either:
 echo   .venv\Scripts\sisi-tv.exe
+echo   start.bat               ^(also runs git pull first^)
 echo.
-echo Or activate the venv first:
+echo Auto-start: SISI-TV.lnk has been placed in your Startup folder,
+echo so the next login will git pull + launch automatically. To disable,
+echo delete the shortcut from:
+echo   shell:startup           ^(paste in Win+R^)
 echo.
-echo   .venv\Scripts\activate
-echo   sisi-tv
-echo.
-echo The app will open http://127.0.0.1:8000/ in your default browser.
+echo The app opens http://127.0.0.1:8000/ in your default browser.
+echo Change bind_host / bind_port via the Settings page for LAN access.
 echo.
 exit /b 0
 

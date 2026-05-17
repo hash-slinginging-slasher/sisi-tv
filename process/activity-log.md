@@ -72,6 +72,21 @@
 
 ## 2026-05-17
 
+### Autostart on Windows login: start.bat + Startup-folder shortcut
+**Files Changed:** `install.bat`, `start.bat` (new), `scripts/create-startup-shortcut.ps1` (new), `README.md`
+
+- New `start.bat` at the repo root runs `git pull --ff-only` (no-ops if there are local commits or no network) then launches `.venv\Scripts\sisi-tv.exe`. Used both as a manual launcher and as the autostart target.
+- `scripts/create-startup-shortcut.ps1` uses `WScript.Shell` COM to drop a `SISI-TV.lnk` into the user's Startup folder (`[Environment]::GetFolderPath('Startup')`). The shortcut targets the repo's `start.bat`, runs minimized (`WindowStyle = 7`), pins working dir to the repo root, and uses `boy-sisi.png` as the icon. Re-running the script overwrites the existing shortcut so install.bat is safe to re-run.
+- `install.bat` calls the PowerShell helper after the storage-dir step. Failure is non-fatal — the user gets a `[WARN]` and the install still finishes. Updated the post-install message to advertise autostart and the `shell:startup` opt-out.
+- README "Quick start" notes the autostart side effect and points at `shell:startup` for removing it.
+- Verified the PS helper end-to-end on this dev box: shortcut created at `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\SISI-TV.lnk` pointing at the repo's `start.bat`, then cleaned up so it doesn't run from the dev location on this machine.
+- 133/133 tests still pass (no Python changes). Ruff clean.
+
+**Deployment:** Not deployed
+**Test Results:** 133/133 passed
+
+---
+
 ### Configurable LAN bind: bind_host + bind_port in Settings
 **Files Changed:** `src/ngc_cams/config.py`, `src/ngc_cams_web/__main__.py`, `src/ngc_cams_web/routes/settings.py`, `src/ngc_cams_web/templates/settings.html`
 
