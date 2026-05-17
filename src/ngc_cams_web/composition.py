@@ -9,6 +9,7 @@ from ngc_cams.cameras import CameraRepository
 from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams_web.routes import cameras as cameras_routes
 from ngc_cams_web.routes import discovery as discovery_routes
+from ngc_cams_web.routes import live as live_routes
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -33,4 +34,5 @@ def build_app(
 
     app.include_router(cameras_routes.router)
     app.include_router(discovery_routes.router)
+    app.include_router(live_routes.router)
     return app

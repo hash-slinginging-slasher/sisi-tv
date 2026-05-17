@@ -72,6 +72,18 @@
 
 ## 2026-05-17
 
+### Live MJPEG route GET /cameras/{id}/live.mjpg (TDD)
+**Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/live.py`, `tests/test_web_live_route.py`
+
+- New `routes.live` module wires `build_mjpeg_command` + `iter_mjpeg_multipart` from Task 10 into a `StreamingResponse` of `multipart/x-mixed-replace`. Spawns ffmpeg per request; client disconnect triggers the generator's `finally` block which kills the subprocess (web-pivot Task 11).
+- Two injectable seams on `app.state`: `live_popen_factory` (defaults to `subprocess.Popen`) and `live_ffmpeg_resolver` (defaults to `find_ffmpeg_executable`). Tests use a `_FakeProcess` with a `BytesIO` stdout to assert the multipart envelope without spawning real ffmpeg.
+- Returns 404 for unknown camera IDs, 503 when ffmpeg isn't installed.
+
+**Deployment:** Not deployed
+**Test Results:** 91/91 passed
+
+---
+
 ### LiveStreamManager helpers: build_mjpeg_command + iter_mjpeg_multipart (TDD)
 **Files Changed:** `src/ngc_cams_web/live.py`, `tests/test_web_live.py`
 
