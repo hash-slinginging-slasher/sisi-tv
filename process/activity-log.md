@@ -72,13 +72,23 @@
 
 ## 2026-05-17
 
+### Enable cross-thread sqlite usage in `ngc_cams.db.connect()`
+**Files Changed:** `src/ngc_cams/db.py`
+
+- Added `check_same_thread=False` to `sqlite3.connect(...)`. Required because FastAPI/Starlette dispatches sync route handlers on a threadpool worker, so a connection created on the main thread (as Task 13's `__main__.py` will do) would otherwise raise `sqlite3.ProgrammingError` on the first request. `sqlite3` is serialized-mode by default; for a single-user app this is the simplest correct choice.
+
+**Deployment:** Not deployed
+**Test Results:** 76/76 passed
+
+---
+
 ### Cameras list page (GET /) with Jinja2 base + index templates
 **Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/__init__.py`, `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/templates/base.html`, `src/ngc_cams_web/templates/index.html`, `tests/test_web_cameras.py`
 
 - Added a Jinja2 base template + index template listing cameras with toggle-record / delete buttons, an add-camera form, and an HTMX-driven Discover button targeting `#discovered` (web-pivot Task 5).
 - New `cameras` APIRouter mounted on the composition root; `Jinja2Templates` attached to `app.state.templates` so later routes share the same env.
 - Widened `build_app(discovery=...)` annotation to `DiscoveryService | None` so tests can build the app without a real discovery service.
-- Test helper opens its in-memory SQLite with `check_same_thread=False` because `TestClient` runs sync handlers on a starlette worker thread (deviation from spec; required to exercise the repo through HTTP).
+- Test connections use `check_same_thread=False` because FastAPI's `TestClient` runs sync handlers on a worker thread; followed up immediately with the same flag on `ngc_cams.db.connect()` so production uvicorn doesn't crash the same way (see next entry).
 
 **Deployment:** Not deployed
 **Test Results:** 76/76 passed
