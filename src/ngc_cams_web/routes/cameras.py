@@ -91,10 +91,20 @@ def add_camera(
     name: str = Form(...),
     rtsp_url: str = Form(...),
     ptz_enabled: str | None = Form(default=None),
+    record_enabled: str | None = Form(default=None),
 ):
+    record_mode = RecordMode.VIDEO_ONLY if record_enabled else RecordMode.OFF
     request.app.state.cameras.add(
-        Camera(name=name, rtsp_url=rtsp_url, ptz_enabled=bool(ptz_enabled))
+        Camera(
+            name=name,
+            rtsp_url=rtsp_url,
+            ptz_enabled=bool(ptz_enabled),
+            record_mode=record_mode,
+        )
     )
+    manager = request.app.state.recording_manager
+    if manager is not None and record_enabled:
+        manager.apply_modes()
     return RedirectResponse("/", status_code=303)
 
 

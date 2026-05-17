@@ -14,6 +14,7 @@ from ngc_cams.cameras import CameraRepository
 from ngc_cams.config import AppConfig
 from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams.onvif.ptz import PTZService
+from ngc_cams.onvif.streams import get_stream_uris
 from ngc_cams.recording.retention import prune_all
 from ngc_cams.segments import SegmentRepository
 from ngc_cams_web.routes import cameras as cameras_routes
@@ -26,6 +27,13 @@ from ngc_cams_web.routes import settings as settings_routes
 logger = logging.getLogger(__name__)
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _STATIC_DIR = Path(__file__).parent / "static"
+
+
+def _default_resolve_streams(cam):
+    """Anonymous ONVIF probe for stream URIs after WS-Discovery finds a host.
+    Wrapped in a try by `run_discovery` so a failed probe (camera demands
+    auth, port closed) just leaves `main_rtsp_url=None` on the result."""
+    return get_stream_uris(cam.address)
 
 
 def _build_lifespan(
@@ -116,6 +124,7 @@ def build_app(
     app.state.recording_manager = recording_manager
     app.state.segments = segments
     app.state.ptz_service = PTZService()
+    app.state.resolve_streams = _default_resolve_streams
     app.state.config = config if config is not None else AppConfig()
     app.state.templates = Jinja2Templates(directory=str(_TEMPLATE_DIR))
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")

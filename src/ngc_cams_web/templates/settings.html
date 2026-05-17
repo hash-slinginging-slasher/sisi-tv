@@ -87,11 +87,17 @@
                     <span class="nav-label text-on-surface-variant">RTSP URL</span>
                     <input name="rtsp_url" required class="mt-1 w-full bg-surface-container-high border border-outline-variant rounded px-3 py-2 font-mono text-sm text-on-surface focus:border-primary focus:outline-none" placeholder="rtsp://192.168.1.x/main">
                 </label>
-                <label class="flex items-center gap-2 nav-label text-on-surface-variant">
-                    <input type="checkbox" name="ptz_enabled" value="1" class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">
-                    PTZ Capable
-                </label>
-                <div class="md:text-right">
+                <div class="flex flex-col gap-2">
+                    <label class="flex items-center gap-2 nav-label text-on-surface-variant">
+                        <input type="checkbox" name="ptz_enabled" value="1" checked class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">
+                        PTZ Capable
+                    </label>
+                    <label class="flex items-center gap-2 nav-label text-on-surface-variant">
+                        <input type="checkbox" name="record_enabled" value="1" checked class="rounded border-outline-variant bg-surface-container-high text-primary focus:ring-primary">
+                        Start recording immediately
+                    </label>
+                </div>
+                <div class="md:text-right md:self-end">
                     <button type="submit" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">Initialize Node</button>
                 </div>
             </form>

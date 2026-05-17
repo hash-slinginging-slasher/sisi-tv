@@ -60,6 +60,40 @@ def test_post_add_creates_camera_and_redirects_to_index():
     assert stored[0].rtsp_url == "rtsp://1.2.3.4/main"
 
 
+def test_post_add_with_record_enabled_starts_recording():
+    app, repo, spy = _build_with_manager()
+    with TestClient(app) as client:
+        client.post(
+            "/cameras/add",
+            data={
+                "name": "RecMe",
+                "rtsp_url": "rtsp://x/main",
+                "record_enabled": "1",
+                "ptz_enabled": "1",
+            },
+            follow_redirects=False,
+        )
+    stored = repo.list()
+    assert len(stored) == 1
+    assert stored[0].record_mode == RecordMode.VIDEO_ONLY
+    assert stored[0].ptz_enabled is True
+    assert spy.apply_modes_calls == 1
+
+
+def test_post_add_without_record_enabled_keeps_record_off():
+    app, repo, spy = _build_with_manager()
+    with TestClient(app) as client:
+        client.post(
+            "/cameras/add",
+            data={"name": "Quiet", "rtsp_url": "rtsp://x/main"},
+            follow_redirects=False,
+        )
+    stored = repo.list()
+    assert stored[0].record_mode == RecordMode.OFF
+    assert stored[0].ptz_enabled is False
+    assert spy.apply_modes_calls == 0
+
+
 def test_post_delete_removes_camera_and_redirects():
     app, repo = _build()
     stored = repo.add(Camera(name="Doomed", rtsp_url="rtsp://x/main"))

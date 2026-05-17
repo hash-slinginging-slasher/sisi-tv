@@ -1,15 +1,36 @@
 {% if error %}
-<p class="empty">Discovery failed: {{ error }}</p>
+<p class="text-sm text-secondary bg-secondary/10 border border-secondary/30 rounded p-2 mt-2">
+    Discovery failed: {{ error }}
+</p>
 {% elif cameras %}
-<ul>
+<ul class="mt-2 space-y-2">
 {% for cam in cameras %}
-    <li>
-        <strong>{{ cam.address }}</strong>
-        {% if cam.manufacturer %} — {{ cam.manufacturer }}{% endif %}
-        {% if cam.main_rtsp_url %}<br><code>{{ cam.main_rtsp_url }}</code>{% endif %}
+    <li class="bg-surface-container-high border border-outline-variant rounded p-2 flex items-start gap-2 justify-between">
+        <div class="min-w-0 flex-1">
+            <p class="font-mono text-xs text-on-surface">
+                <span class="text-primary">{{ cam.address }}</span>
+                {% if cam.manufacturer %} <span class="text-on-surface-variant">— {{ cam.manufacturer }}</span>{% endif %}
+            </p>
+            {% if cam.main_rtsp_url %}
+            <p class="font-mono text-[10px] text-on-surface-variant truncate" title="{{ cam.main_rtsp_url }}">{{ cam.main_rtsp_url }}</p>
+            {% else %}
+            <p class="text-[10px] text-on-surface-variant italic">RTSP not resolved (camera may require credentials).</p>
+            {% endif %}
+        </div>
+        {% if cam.main_rtsp_url %}
+        <form method="post" action="/cameras/add">
+            <input type="hidden" name="name" value="{% if cam.manufacturer %}{{ cam.manufacturer }} {% endif %}{{ cam.address }}">
+            <input type="hidden" name="rtsp_url" value="{{ cam.main_rtsp_url }}">
+            <input type="hidden" name="ptz_enabled" value="1">
+            <input type="hidden" name="record_enabled" value="1">
+            <button type="submit" class="nav-label px-2 py-1 rounded bg-primary-container text-on-primary-container hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">
+                + Add
+            </button>
+        </form>
+        {% endif %}
     </li>
 {% endfor %}
 </ul>
 {% else %}
-<p class="empty">No cameras discovered on this network.</p>
+<p class="text-sm text-on-surface-variant italic mt-2">No cameras discovered on this network.</p>
 {% endif %}

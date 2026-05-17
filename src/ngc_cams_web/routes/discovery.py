@@ -11,7 +11,8 @@ router = APIRouter()
 @router.post("/discover", response_class=HTMLResponse)
 def discover(request: Request):
     service = request.app.state.discovery
-    result = run_discovery(service, timeout=5)
+    resolve = getattr(request.app.state, "resolve_streams", None)
+    result = run_discovery(service, timeout=5, resolve_streams=resolve)
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request,

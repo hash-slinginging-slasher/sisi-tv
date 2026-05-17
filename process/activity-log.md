@@ -72,6 +72,20 @@
 
 ## 2026-05-17
 
+### Discovery one-click Add + PTZ/recording-on-by-default
+**Files Changed:** `src/ngc_cams_web/composition.py`, `src/ngc_cams_web/routes/cameras.py`, `src/ngc_cams_web/routes/discovery.py`, `src/ngc_cams_web/templates/_discovered.html`, `src/ngc_cams_web/templates/settings.html`, `tests/test_web_cameras.py`, `tests/test_web_discovery.py`
+
+- `POST /discover` now passes a resolver to `run_discovery`. Default resolver in `composition.py` does an anonymous `ngc_cams.onvif.streams.get_stream_uris(cam.address)` probe; `run_discovery` swallows failures so cameras still show up even when the probe is rejected. Tests inject their own resolver (or set `app.state.resolve_streams = None`) so the real network call never fires in CI.
+- `_discovered.html` rewritten with the dark Tailwind chrome and a one-click "+ Add" form per camera whenever the RTSP URL resolved. The hidden inputs prefill name from `manufacturer + address` and force `ptz_enabled=1` + `record_enabled=1` so paired cameras are immediately useful. Cameras without a resolved RTSP get an "RTSP not resolved" hint instead of a broken Add button.
+- `POST /cameras/add` accepts a new optional `record_enabled` form field. When set, the new camera lands with `record_mode = VIDEO_ONLY` and the route calls `recording_manager.apply_modes()` so ffmpeg starts on the next tick.
+- Settings page's Add Tactical Node form now ships both checkboxes (`ptz_enabled`, `record_enabled`) pre-checked. User can uncheck either if they want a passive entry.
+- Three new tests: discovery renders Add form when RTSP resolves; Add form omitted when it doesn't; `POST /cameras/add` with `record_enabled=1` sets `VIDEO_ONLY` + fires `apply_modes`, without `record_enabled` leaves `OFF` and skips `apply_modes`. 133/133 total, ruff clean.
+
+**Deployment:** Not deployed
+**Test Results:** 133/133 passed
+
+---
+
 ### Move default storage from D:\ to C:\sisi-tv-storage\
 **Files Changed:** `src/ngc_cams/config.py`, `install.bat`, `CLAUDE.md`, `AGENTS.md`
 
