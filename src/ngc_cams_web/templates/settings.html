@@ -12,6 +12,15 @@
 </div>
 {% endif %}
 
+{% if reset %}
+<div class="mb-4 bg-secondary/10 border border-secondary/40 rounded-lg px-4 py-3 flex items-center gap-3">
+    <span class="material-symbols-outlined text-secondary">restart_alt</span>
+    <p class="text-sm text-on-surface">
+        Recording &amp; Network overrides cleared. <strong>Restart <code class="text-primary">sisi-tv</code></strong> so the computed defaults (e.g. <code class="text-primary">Z:\SISI-TV-storage\&lt;COMPUTERNAME&gt;</code>) take effect. Camera list, grid layout, and feed filter are untouched.
+    </p>
+</div>
+{% endif %}
+
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
     <div class="xl:col-span-2 space-y-4">
@@ -116,6 +125,11 @@
                 Bind host is <code class="text-secondary">{{ values.bind_host }}</code> — anyone on this LAN can reach the app. The app has no authentication; don't expose this to the public internet.
             </div>
             {% endif %}
+            <!-- Sibling form for the "Reset to defaults" button. Lives outside
+                 the main save form so the button can be associated via the
+                 HTML5 `form="settings-reset"` attribute and sit next to Save
+                 without browsers attempting to nest forms (which is invalid). -->
+            <form method="post" action="/settings/reset" id="settings-reset" onsubmit="return confirm('Clear all Recording &amp; Network overrides and fall back to defaults (e.g. Z:\\SISI-TV-storage\\&lt;COMPUTERNAME&gt;)? Existing files stay put; restart SISI-TV to apply. Cameras and grid layout are not affected.');"></form>
             <form method="post" action="/settings" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {% for name in fields %}
                 <label class="block">
@@ -126,7 +140,11 @@
                     {% endif %}
                 </label>
                 {% endfor %}
-                <div class="md:col-span-2 md:text-right">
+                <div class="md:col-span-2 flex justify-end gap-2">
+                    <button type="submit" form="settings-reset" class="px-5 py-2 border border-secondary/40 text-secondary nav-label rounded-lg hover:bg-secondary/10 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">restart_alt</span>
+                        Reset to defaults
+                    </button>
                     <button type="submit" class="px-5 py-2 bg-primary-container text-on-primary-container nav-label rounded-lg hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all">Save</button>
                 </div>
             </form>

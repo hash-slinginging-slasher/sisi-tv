@@ -1,5 +1,18 @@
 ## 2026-05-18
 
+### Settings: "Reset to defaults" button
+**Files Changed:** `src/ngc_cams_web/routes/settings.py`, `src/ngc_cams_web/templates/settings.html`, `tests/test_web_settings.py`
+
+- New `POST /settings/reset` endpoint pops every key in `EDITABLE_FIELD_NAMES` from `settings.json` and redirects to `/settings?reset=1`. Unknown keys (grid_order, grid_columns, feed_filter, future additions) are preserved so the user doesn't lose unrelated UI state. This is the one-click way to drop a stale `C:\sisi-tv-storage` override and let the new `Z:\SISI-TV-storage\<COMPUTERNAME>` default kick in across multiple PCs.
+- Settings page renders an orange "Reset to defaults" button next to Save, in its own sibling `<form id="settings-reset">` associated via HTML5 `form="..."` attribute so it doesn't submit pending field edits along with the reset. Native `confirm()` dialog explains what's reset and what survives.
+- After redirect, `?reset=1` shows a secondary-colored banner mirroring the existing saved banner: "Recording & Network overrides cleared. Restart sisi-tv so the computed defaults take effect."
+- Added two integration tests: reset strips editables while preserving unknowns; banner text appears after the redirect. Smoke-test outside pytest confirmed end-to-end.
+
+**Deployment:** Not deployed
+**Test Results:** Out-of-pytest end-to-end run hit all assertions; `ruff` clean.
+
+---
+
 ### Default storage to per-host subdir under Z:\SISI-TV-storage
 **Files Changed:** `src/ngc_cams/config.py`, `install.bat`, `CLAUDE.md`, `AGENTS.md`, `README.md`
 

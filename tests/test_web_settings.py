@@ -118,3 +118,39 @@ def test_settings_page_shows_storage_path(isolated_settings):
     with TestClient(app) as client:
         response = client.get("/settings")
     assert str(isolated_settings) in response.text
+
+
+def test_post_settings_reset_clears_editable_fields_preserving_unknowns(isolated_settings):
+    # Mix of editable overrides (recording_root, bind_port) and unrelated UI
+    # state (grid_order, feed_filter, future-unknown). Reset should drop the
+    # editable overrides and leave the others alone.
+    settings_store.save(
+        {
+            "recording_root": r"C:\old-default",
+            "snapshot_root": r"C:\old-default\snapshots",
+            "bind_port": 9999,
+            "grid_order": [3, 1, 2],
+            "feed_filter": "vhs",
+            "some_future_key": {"keep": "me"},
+        }
+    )
+    app = _build()
+    with TestClient(app) as client:
+        response = client.post("/settings/reset", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/settings?reset=1"
+    data = json.loads(isolated_settings.read_text(encoding="utf-8"))
+    assert "recording_root" not in data
+    assert "snapshot_root" not in data
+    assert "bind_port" not in data
+    assert data["grid_order"] == [3, 1, 2]
+    assert data["feed_filter"] == "vhs"
+    assert data["some_future_key"] == {"keep": "me"}
+
+
+def test_settings_reset_banner_appears_after_redirect(isolated_settings):
+    app = _build()
+    with TestClient(app) as client:
+        response = client.get("/settings?reset=1")
+    assert response.status_code == 200
+    assert "overrides cleared" in response.text.lower()

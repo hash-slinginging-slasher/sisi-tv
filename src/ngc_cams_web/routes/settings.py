@@ -39,7 +39,7 @@ def _form_values(request: Request) -> dict[str, str]:
 
 
 @router.get("/settings", response_class=HTMLResponse)
-def settings_page(request: Request, saved: int = 0):
+def settings_page(request: Request, saved: int = 0, reset: int = 0):
     templates = request.app.state.templates
     cameras = request.app.state.cameras.list()
     return templates.TemplateResponse(
@@ -52,11 +52,25 @@ def settings_page(request: Request, saved: int = 0):
             "labels": _FIELD_LABELS,
             "fields": EDITABLE_FIELD_NAMES,
             "saved": bool(saved),
+            "reset": bool(reset),
             "stored": settings_store.load(),
             "stored_path": settings_store.default_settings_path(),
             "cameras": cameras,
         },
     )
+
+
+@router.post("/settings/reset")
+async def reset_settings():
+    """Clear every override under EDITABLE_FIELD_NAMES so AppConfig.from_settings()
+    falls back to the computed defaults (e.g. Z:\\SISI-TV-storage\\<COMPUTERNAME>).
+    Unknown keys -- grid_order, grid_columns, feed_filter, future additions --
+    are preserved so the user doesn't lose unrelated UI state."""
+    existing = settings_store.load()
+    for name in EDITABLE_FIELD_NAMES:
+        existing.pop(name, None)
+    settings_store.save(existing)
+    return RedirectResponse("/settings?reset=1", status_code=303)
 
 
 @router.post("/settings")
