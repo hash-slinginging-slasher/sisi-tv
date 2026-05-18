@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SISI-TV{% endblock %}</title>
     <link rel="icon" href="/static/boy-sisi.png">
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- All assets are vendored under /static/ via scripts/vendor_static.py so
+         the kiosk display works on a LAN with no internet. Inter / JetBrains
+         Mono are intentionally NOT vendored -- the font-family rules below
+         fall back to system-ui / ui-monospace (Segoe UI / Consolas on Windows)
+         which look near-identical and saves ~150KB. -->
+    <script src="/static/tailwind.js"></script>
+    <script src="/static/htmx.min.js" defer></script>
+    <link href="/static/fonts/material-symbols.css" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: "class",

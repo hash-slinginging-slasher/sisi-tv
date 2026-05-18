@@ -1,5 +1,18 @@
 ## 2026-05-18
 
+### Vendor all CDN dependencies for offline kiosk operation
+**Files Changed:** `scripts/vendor_static.py` (new), `src/ngc_cams_web/static/tailwind.js` (new, 418KB), `src/ngc_cams_web/static/htmx.min.js` (new, 50KB), `src/ngc_cams_web/static/fonts/material-symbols.woff2` (new, 1.1MB), `src/ngc_cams_web/static/fonts/material-symbols.css` (new), `src/ngc_cams_web/templates/base.html`
+
+- Root-caused the GMKtec viewer's "no CSS, mascot only" symptom to the page depending on four external CDNs (cdn.tailwindcss.com, unpkg.com/htmx, two Google Fonts families) — the kiosk LAN has no working internet to the public CDNs.
+- Wrote `scripts/vendor_static.py` (uses stdlib `urllib`, no extra deps) to download Tailwind JIT + HTMX + the Material Symbols Outlined variable font + its CSS into `src/ngc_cams_web/static/`. Re-runnable to refresh versions.
+- Updated `base.html` to reference only local `/static/...` paths. Intentionally did NOT vendor Inter / JetBrains Mono: the existing font-family rules fall back to `system-ui` / `ui-monospace` (Segoe UI / Consolas on Windows), which is visually equivalent and saves ~150KB.
+- Verified: `/grid` HTML response now contains zero outgoing CDN URLs; all four vendored assets return HTTP 200 from the local FastAPI mount.
+
+**Deployment:** Not deployed
+**Test Results:** Manual server fetch of /grid + each static asset returned 200.
+
+---
+
 ### Fix install.bat step 3b parser crash (parens-in-echo)
 **Files Changed:** `install.bat`
 
