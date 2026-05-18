@@ -32,8 +32,9 @@ def test_index_lists_each_camera_name():
         response = client.get("/")
 
     assert response.status_code == 200
-    assert "Front Door" in response.text
-    assert "Backyard" in response.text
+    # Dashboard tile labels render camera names through the |upper filter.
+    assert "FRONT DOOR" in response.text
+    assert "BACKYARD" in response.text
 
 
 def test_index_when_no_cameras_shows_empty_state():
@@ -173,7 +174,8 @@ def test_get_camera_detail_renders_live_img_and_record_button():
         response = client.get(f"/cameras/{stored.id}")
     assert response.status_code == 200
     assert "Door" in response.text
-    assert f'src="/cameras/{stored.id}/live.mjpg"' in response.text
+    # Live view is now HLS via hls.js: <video data-hls-src="/cameras/N/live/index.m3u8">.
+    assert f'data-hls-src="/cameras/{stored.id}/live/index.m3u8"' in response.text
     assert "Toggle record" in response.text
 
 
@@ -374,7 +376,8 @@ def test_grid_renders_live_img_for_every_camera(tmp_path, monkeypatch):
         response = client.get("/grid")
     assert response.status_code == 200
     for i in range(1, 4):
-        assert f'/cameras/{i}/live.mjpg' in response.text
+        # Live view migrated from MJPEG <img> to HLS <video data-hls-src=...>.
+        assert f'/cameras/{i}/live/index.m3u8' in response.text
         assert f'href="/cameras/{i}"' in response.text
 
 
@@ -389,7 +392,7 @@ def test_grid_shows_every_camera_no_cap(tmp_path, monkeypatch):
     with TestClient(app) as client:
         response = client.get("/grid")
     assert response.status_code == 200
-    assert response.text.count("/live.mjpg") == 10
+    assert response.text.count("/live/index.m3u8") == 10
 
 
 def test_grid_respects_saved_order(tmp_path, monkeypatch):
@@ -443,7 +446,7 @@ def test_grid_shows_empty_state_when_no_cameras(tmp_path, monkeypatch):
         response = client.get("/grid")
     assert response.status_code == 200
     assert "No cameras yet" in response.text
-    assert "/live.mjpg" not in response.text
+    assert "/live/index.m3u8" not in response.text
 
 
 def test_grid_marks_recording_cameras(tmp_path, monkeypatch):
