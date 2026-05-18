@@ -42,6 +42,19 @@ def build_segment_command(
         ffmpeg,
         "-rtsp_transport",
         "tcp",
+        # Without these timeouts, ffmpeg blocks indefinitely when the RTSP
+        # stream stalls (camera firmware hiccup, router blip, NAS SMB hang
+        # back-pressuring the muxer). The poll() restart loop only sees
+        # crashed processes, so a hung-but-alive ffmpeg writes 0 bytes for
+        # hours and the segment file just sits there. With these, ffmpeg
+        # exits on the timeout, RecordingManager's existing crash-restart
+        # logic respawns it. The stall-watchdog (RecordingManager._check_stall)
+        # is the second line of defense for cases where ffmpeg is still
+        # producing data but the output is stuck.
+        "-stimeout",
+        "5000000",   # 5s for RTSP setup / TCP socket
+        "-rw_timeout",
+        "10000000",  # 10s read/write timeout once streaming
         "-i",
         rtsp_url,
         "-c",

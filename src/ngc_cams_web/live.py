@@ -19,6 +19,14 @@ def build_mjpeg_command(rtsp_url: str, ffmpeg: str = "ffmpeg") -> list[str]:
         "error",
         "-rtsp_transport",
         "tcp",
+        # Timeouts match the recording command (see comment in
+        # ngc_cams.recording.ffmpeg.build_segment_command). When the
+        # source RTSP stalls, ffmpeg exits cleanly rather than blocking
+        # the browser <img> tag forever waiting on the next JPEG frame.
+        "-stimeout",
+        "5000000",
+        "-rw_timeout",
+        "10000000",
         "-i",
         rtsp_url,
         "-f",

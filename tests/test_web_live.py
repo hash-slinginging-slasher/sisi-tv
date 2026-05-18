@@ -23,6 +23,19 @@ def test_build_mjpeg_command_defaults_to_bare_ffmpeg():
     assert cmd[0] == "ffmpeg"
 
 
+def test_build_mjpeg_command_sets_rtsp_and_read_timeouts():
+    # Mirror the recording command's resilience: a stalled RTSP source
+    # should cause ffmpeg to exit rather than leave the <img> frozen.
+    cmd = build_mjpeg_command("rtsp://1.2.3.4/main")
+    assert "-stimeout" in cmd
+    assert cmd[cmd.index("-stimeout") + 1] == "5000000"
+    assert "-rw_timeout" in cmd
+    assert cmd[cmd.index("-rw_timeout") + 1] == "10000000"
+    i = cmd.index("-i")
+    assert cmd.index("-stimeout") < i
+    assert cmd.index("-rw_timeout") < i
+
+
 def test_iter_mjpeg_multipart_yields_one_frame_per_jpeg():
     SOI = b"\xff\xd8"
     EOI = b"\xff\xd9"
