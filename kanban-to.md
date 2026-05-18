@@ -6,7 +6,10 @@ Source of truth for what's next on the personal-app roadmap. Move cards across c
 
 ## Backlog
 
-_empty_
+- **Phase 1 — Tailscale for mobile/family access (no code).** Install Tailscale on the GMKtec (`winget install Tailscale.Tailscale`) and on each family member's phone. Set `bind_host = 0.0.0.0` in Settings so SISI-TV listens on the Tailscale interface. Family hits `http://gmktec:8000/grid` from anywhere — no public exposure, no port forwarding. Free Personal tier covers it. Document the setup steps in `README.md` after verifying on at least one phone.
+- **Phase 2 — Simple app login (defense in depth).** Single password set in Settings, stored as `bcrypt` hash in `~/.ngc-cams/settings.json`. New FastAPI middleware checks a signed session cookie on every route except `/login`, `/static/*`, `/healthz`. `/login` template renders a single password field, sets the cookie on success. Session secret auto-generated on first run and persisted. ~80 lines of code + one template.
+- **Phase 3 — Signed time-limited share links (the practical "share to Discord/Slack" answer).** "Share" button on `/camera/{id}` opens a modal that generates an HMAC-signed URL like `/share/<token>?ttl=4h`, valid for one camera for N hours. Login-bypass for that one camera only. User copy-pastes the URL into Discord/Slack the normal way; family member taps it on their phone and the link dies on its own. Avoids the full Slack-app / Discord-bot setup pain while delivering the same outcome.
+- **Phase 4 (deferred, only if Phase 3 isn't enough) — Real Slack/Discord slash command.** `/sisi <camera>` in chat returns an ephemeral signed share link. Requires Slack Socket Mode (or Discord Gateway bot) so the server doesn't need a public webhook — it connects outbound from the GMKtec. Bot token + app config + verification. Large effort relative to value once Phase 3 ships; revisit only if family actively asks for it.
 
 ---
 
