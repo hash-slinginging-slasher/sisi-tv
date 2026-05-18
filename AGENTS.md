@@ -42,4 +42,4 @@ Pull requests should include a short summary, test results, linked issue or requ
 
 ## Security & Configuration Tips
 
-Do not commit camera passwords, RTSP URLs containing credentials, SQLite databases, recordings, snapshots, or generated `.exe` files. Keep storage paths configurable; the app defaults to `C:\sisi-tv-storage\` (recordings) and `C:\sisi-tv-storage\snapshots\`. Users can override via the Settings page (writes `~/.ngc-cams/settings.json`).
+Do not commit camera passwords, RTSP URLs containing credentials, SQLite databases, recordings, snapshots, or generated `.exe` files. Keep storage paths configurable; the app defaults to `Z:\SISI-TV-storage\<COMPUTERNAME>\` (recordings, snapshots, SQLite DB) so multiple SISI-TV PCs writing to the same NAS share at `Z:\SISI-TV-storage\` never collide. Users can override via the Settings page (writes `~/.ngc-cams/settings.json`).

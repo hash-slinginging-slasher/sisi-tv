@@ -1,5 +1,19 @@
 ## 2026-05-18
 
+### Default storage to per-host subdir under Z:\SISI-TV-storage
+**Files Changed:** `src/ngc_cams/config.py`, `install.bat`, `CLAUDE.md`, `AGENTS.md`, `README.md`
+
+- Replaced `_DEFAULT_STORAGE_ROOT = C:\sisi-tv-storage` with `_default_storage_root()` returning `Z:\SISI-TV-storage\<COMPUTERNAME>`, so multiple SISI-TV PCs writing to the same NAS share at `Z:\SISI-TV-storage\` never overwrite each other's recordings, snapshots, or SQLite DB.
+- Hostname pulled from Windows `COMPUTERNAME` env var, falling back to `socket.gethostname()`, with `/` and `\` stripped defensively so a malformed hostname can't escape the storage subtree.
+- All three AppConfig fields (`recording_root`, `snapshot_root`, `db_path`) switched to `field(default_factory=...)` so each instantiation evaluates the current host (not the value frozen at class-definition time).
+- `install.bat` step 5 now tries to create `Z:\SISI-TV-storage\%COMPUTERNAME%\snapshots`; if `Z:` isn't mounted at install time it prints a `[WARN]` and continues -- recordings will fail until NAS is mounted, but the install otherwise completes cleanly. Three docs (`CLAUDE.md`, `AGENTS.md`, `README.md`) updated to describe the new default.
+- Existing per-PC `settings.json` overrides are unaffected; only new installs (no override) pick up the new default automatically.
+
+**Deployment:** Not deployed
+**Test Results:** `_hostname()` / `_default_storage_root()` smoke-tested on dev box (`JODEL-SERVER` → `Z:\SISI-TV-storage\JODEL-SERVER`). `tests/test_config.py` passes; `tests/test_settings_store.py` errors are pre-existing sandbox temp-dir perms, not related.
+
+---
+
 ### Vendor all CDN dependencies for offline kiosk operation
 **Files Changed:** `scripts/vendor_static.py` (new), `src/ngc_cams_web/static/tailwind.js` (new, 418KB), `src/ngc_cams_web/static/htmx.min.js` (new, 50KB), `src/ngc_cams_web/static/fonts/material-symbols.woff2` (new, 1.1MB), `src/ngc_cams_web/static/fonts/material-symbols.css` (new), `src/ngc_cams_web/templates/base.html`
 

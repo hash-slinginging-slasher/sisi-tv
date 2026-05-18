@@ -94,17 +94,31 @@ goto :after_ffmpeg
 :after_ffmpeg
 
 REM --- 5. Default storage dirs ---------------------------------------------
+REM Default recording/snapshot/db root is Z:\SISI-TV-storage\%COMPUTERNAME%.
+REM Per-PC subdir so several SISI-TV machines writing to the same shared NAS
+REM never collide. If Z: isn't mounted at install time (NAS offline / not
+REM mapped yet), warn but continue -- user can mount it later, or override
+REM the paths via Settings.
 echo.
-if not exist "C:\sisi-tv-storage"           mkdir "C:\sisi-tv-storage"           >nul 2>&1
-if not exist "C:\sisi-tv-storage\snapshots" mkdir "C:\sisi-tv-storage\snapshots" >nul 2>&1
+set "STORAGE_ROOT=Z:\SISI-TV-storage\%COMPUTERNAME%"
+if not exist "Z:\" goto :storage_nas_missing
+if not exist "%STORAGE_ROOT%"           mkdir "%STORAGE_ROOT%"           >nul 2>&1
+if not exist "%STORAGE_ROOT%\snapshots" mkdir "%STORAGE_ROOT%\snapshots" >nul 2>&1
 if errorlevel 1 goto :storage_failed
-echo [ OK ] Default storage dirs ready: C:\sisi-tv-storage
+echo [ OK ] Default storage dirs ready: %STORAGE_ROOT%
+goto :startup
+
+:storage_nas_missing
+echo [WARN] Z: drive is not mounted -- skipping storage dir creation.
+echo        SISI-TV defaults to Z:\SISI-TV-storage\%COMPUTERNAME% for
+echo        recordings, snapshots, and the SQLite DB. Map the NAS to Z:
+echo        before starting cameras, or override paths via Settings.
 goto :startup
 
 :storage_failed
-echo [WARN] Could not create C:\sisi-tv-storage automatically.
-echo        Either run install.bat from an elevated prompt, or open the
-echo        Settings page after launch to point recording_root somewhere writable.
+echo [WARN] Could not create %STORAGE_ROOT% automatically.
+echo        Permission issue, or NAS read-only? Open Settings after launch
+echo        to point recording_root somewhere writable.
 goto :startup
 
 :startup

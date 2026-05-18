@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import socket
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -24,21 +26,33 @@ _EDITABLE_FIELDS: tuple[tuple[str, Any], ...] = (
 EDITABLE_FIELD_NAMES: tuple[str, ...] = tuple(name for name, _ in _EDITABLE_FIELDS)
 
 
-_DEFAULT_STORAGE_ROOT = Path(r"C:\sisi-tv-storage")
+def _hostname() -> str:
+    """Per-PC subdirectory key for shared-NAS storage.
+
+    Multiple SISI-TV machines pointing at the same Z:\\SISI-TV-storage share
+    must not write to the same directory. We namespace by Windows
+    COMPUTERNAME (falling back to socket.gethostname()) so each machine
+    gets its own subtree without any per-PC configuration.
+    """
+    name = os.environ.get("COMPUTERNAME") or socket.gethostname() or "default"
+    # Defensive: refuse path separators that would break the directory layout.
+    return name.strip().replace("/", "_").replace("\\", "_") or "default"
+
+
+def _default_storage_root() -> Path:
+    return Path(r"Z:\SISI-TV-storage") / _hostname()
 
 
 @dataclass(frozen=True)
 class AppConfig:
-    recording_root: Path = _DEFAULT_STORAGE_ROOT
-    snapshot_root: Path = _DEFAULT_STORAGE_ROOT / "snapshots"
+    recording_root: Path = field(default_factory=_default_storage_root)
+    snapshot_root: Path = field(default_factory=lambda: _default_storage_root() / "snapshots")
     segment_seconds: int = 600
     retention_days: int = 7
     default_retention_days: int = 7
     storage_limit_gb: int = 20
     disk_guard_free_gb: int = 10
-    db_path: Path = field(
-        default_factory=lambda: _DEFAULT_STORAGE_ROOT / "ngc-cams.sqlite3"
-    )
+    db_path: Path = field(default_factory=lambda: _default_storage_root() / "ngc-cams.sqlite3")
     bind_host: str = "127.0.0.1"
     bind_port: int = 8000
 

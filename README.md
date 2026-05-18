@@ -13,7 +13,7 @@ install.bat
 .venv\Scripts\sisi-tv.exe
 ```
 
-`install.bat` checks for Python 3.11+, creates `.venv`, installs the Python deps, installs ffmpeg via winget if missing, pre-creates the default storage dirs under `C:\sisi-tv-storage\`, and drops a `SISI-TV.lnk` shortcut in your Windows Startup folder so future logins auto-pull from `origin/main` and launch the app.
+`install.bat` checks for Python 3.11+, creates `.venv`, installs the Python deps, installs ffmpeg via winget if missing, pre-creates the default storage dirs under `Z:\SISI-TV-storage\<COMPUTERNAME>\` (per-PC subdir so several SISI-TV machines sharing a NAS at `Z:\SISI-TV-storage\` don't overwrite each other — if Z: isn't mounted at install time it just warns), and drops `SISI-TV.cmd` (plus `SISI-TV Viewer.cmd` when pywebview is installed) in your Windows Startup folder so future logins auto-pull from `origin/main` and launch the app.
 
 To disable autostart later, delete the shortcut from `shell:startup` (paste that in Win+R). To manually run the same flow (git pull + launch), use the committed `start.bat`.
 
