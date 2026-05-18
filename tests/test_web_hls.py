@@ -119,6 +119,10 @@ def test_build_hls_command_emits_rolling_hls_flags():
     flags = cmd[cmd.index("-hls_flags") + 1]
     assert "delete_segments" in flags
     assert "omit_endlist" in flags
+    # `independent_segments` must NOT be present -- it forces ffmpeg to wait
+    # for a keyframe at each segment boundary, which stalls indefinitely on
+    # cameras with long GOPs (most ONVIF firmwares).
+    assert "independent_segments" not in flags
     # Output: ends with the playlist path.
     assert cmd[-1].endswith("index.m3u8")
 

@@ -87,8 +87,13 @@ def build_hls_command(
         # delete_segments: ffmpeg unlinks .ts files older than the rolling
         # window so the temp dir stays small. omit_endlist: never signal
         # EOF in the playlist -- it's a live feed.
+        # Note: `independent_segments` was tempting but it makes ffmpeg WAIT
+        # for a keyframe at every segment boundary. Most ONVIF cameras send
+        # keyframes every 5-10s, so a 2s segment with this flag stalls
+        # forever (alive ffmpeg, zero playlist files written, route returns
+        # 503 in a loop). Skip the flag; hls.js plays fine without it.
         "-hls_flags",
-        "delete_segments+omit_endlist+independent_segments",
+        "delete_segments+omit_endlist",
         "-hls_segment_type",
         "mpegts",
         "-hls_segment_filename",
