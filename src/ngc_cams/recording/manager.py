@@ -26,6 +26,14 @@ SEGMENT_LIST_FILENAME = "segments.csv"
 RESTART_BACKOFF_SECONDS = 5
 GRACEFUL_TIMEOUT_SECONDS = 3
 TERMINATE_TIMEOUT_SECONDS = 2
+# Stall watchdog: if the current segment .mp4 file size doesn't grow for this
+# many seconds while ffmpeg is still alive (returncode is None), assume it's
+# hung -- kill it so the existing crash-restart logic respawns next poll().
+# The ffmpeg `-rw_timeout` flag (10s) is the first line of defense; this is
+# the backstop for cases where ffmpeg keeps the socket alive but stops
+# producing output (e.g. NAS write blocked, slow disk, codec edge cases).
+# Tuned for ~3x the rw_timeout to avoid false positives on a single hiccup.
+STALL_KILL_AFTER_SECONDS = 30
 
 # On Windows we have to start ffmpeg in its own process group so a CTRL_BREAK_EVENT
 # only signals ffmpeg, not our whole Python app.
@@ -42,6 +50,10 @@ class _Recording:
     segment_list_path: Path
     segment_list_offset: int = 0
     next_restart_after: datetime | None = None
+    # Stall watchdog bookkeeping. -1 means "no observation yet"; last_growth_at
+    # is set the first time we see a non-empty segment file.
+    last_seen_size: int = -1
+    last_growth_at: datetime | None = None
 
     @property
     def has_audio(self) -> bool:
@@ -277,6 +289,8 @@ class RecordingManager:
             self._ingest_new_segments(recording)
             returncode = recording.process.poll()
             if returncode is None:
+                # Still alive -- check whether it's actually producing output.
+                self._check_stall_and_maybe_kill(recording, now)
                 continue
             if recording.next_restart_after is None:
                 recording.next_restart_after = now + timedelta(seconds=RESTART_BACKOFF_SECONDS)
@@ -317,6 +331,65 @@ class RecordingManager:
             )
             self._ingest_new_segments(entry.recording)
         self._stopping = remaining
+
+    def _current_segment_size(self, recording: _Recording) -> int | None:
+        """Bytes-on-disk for the most recent ``.mp4`` in this recording's segment dir.
+
+        Returns ``None`` if no segment file exists yet (e.g. ffmpeg is still
+        establishing the RTSP session) or the dir can't be listed. The
+        caller treats ``None`` as "no observation, don't penalize."
+        """
+        seg_dir = recording.segment_list_path.parent
+        try:
+            mp4s = list(seg_dir.glob("*.mp4"))
+        except OSError:
+            return None
+        if not mp4s:
+            return None
+        try:
+            newest = max(mp4s, key=lambda p: p.stat().st_mtime)
+            return newest.stat().st_size
+        except OSError:
+            return None
+
+    def _check_stall_and_maybe_kill(self, recording: _Recording, now: datetime) -> None:
+        """If the current segment file hasn't grown for STALL_KILL_AFTER_SECONDS,
+        send SIGKILL so the existing crash-restart path respawns ffmpeg.
+
+        ffmpeg's own ``-rw_timeout`` (set in build_segment_command) handles most
+        stalls by making ffmpeg exit. This watchdog is the backstop for cases
+        where ffmpeg keeps the connection alive (no read timeout) but the
+        muxer or output write has wedged -- e.g. NAS SMB I/O stalled but the
+        TCP socket is still receiving keepalive packets. In that scenario the
+        segment file size stops growing while ffmpeg's PID stays alive.
+        """
+        size = self._current_segment_size(recording)
+        if size is None:
+            # No mp4 yet (cold start, still negotiating RTSP). Don't penalize.
+            return
+        if size > recording.last_seen_size:
+            recording.last_seen_size = size
+            recording.last_growth_at = now
+            return
+        # Size unchanged since last observation.
+        if recording.last_growth_at is None:
+            recording.last_growth_at = now
+            return
+        elapsed = (now - recording.last_growth_at).total_seconds()
+        if elapsed < STALL_KILL_AFTER_SECONDS:
+            return
+        logger.warning(
+            "ffmpeg for camera %s appears stalled (segment size %d unchanged "
+            "for %.0fs); killing for restart",
+            recording.camera.id, size, elapsed,
+        )
+        try:
+            recording.process.kill()
+        except OSError:
+            pass
+        # Reset so we don't kill-spam if the respawn also stalls -- next call
+        # will set last_growth_at from scratch after the new process starts.
+        recording.last_growth_at = now
 
     def _send_graceful(self, process: object) -> None:
         """Ask ffmpeg to close cleanly (Ctrl-Break on Windows, SIGINT on Unix).

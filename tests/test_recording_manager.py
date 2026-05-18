@@ -538,3 +538,135 @@ def test_disk_guard_does_not_block_when_disk_usage_call_fails(
     manager.start(camera)
     # Fail-open: if we can't check, don't block recording.
     assert len(factory.processes) == 1
+
+
+# --- stall watchdog -----------------------------------------------------
+
+def _drive_clock(start: datetime):
+    """Return a (now, advance) pair. now() is the manager clock; advance(seconds)
+    pushes it forward. Lets us drive RecordingManager._check_stall through real
+    elapsed time without sleeping."""
+    holder = [start]
+
+    def now() -> datetime:
+        return holder[0]
+
+    def advance(seconds: int) -> None:
+        from datetime import timedelta
+        holder[0] = holder[0] + timedelta(seconds=seconds)
+
+    return now, advance
+
+
+def _make_manager_mutable_clock(tmp_path, cameras_repo, segments_repo, factory, now_fn):
+    return RecordingManager(
+        cameras_repo,
+        segments_repo,
+        recording_root=tmp_path,
+        popen_factory=factory,
+        clock=now_fn,
+        ffmpeg_resolver=lambda: "ffmpeg",
+    )
+
+
+def test_watchdog_kills_ffmpeg_when_segment_size_does_not_grow(
+    tmp_path, cameras_repo, segments_repo
+):
+    factory = FakeFactory()
+    now_fn, advance = _drive_clock(datetime(2026, 5, 18, 12, 0, 0))
+    manager = _make_manager_mutable_clock(
+        tmp_path, cameras_repo, segments_repo, factory, now_fn
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    process = factory.processes[0]
+
+    # Simulate ffmpeg having created one segment file. The watchdog measures
+    # growth of the newest .mp4 in the segment dir.
+    seg_dir = tmp_path / "Front" / "2026-05-18"
+    segment = seg_dir / "2026-05-18_12-00-00.mp4"
+    segment.write_bytes(b"x" * 1024)
+
+    # First poll: records initial 1024-byte observation. No kill.
+    manager.poll()
+    assert not process.killed
+
+    # Same size after a 31-second gap -> watchdog kills.
+    advance(31)
+    manager.poll()
+    assert process.killed
+
+
+def test_watchdog_does_not_kill_when_segment_keeps_growing(
+    tmp_path, cameras_repo, segments_repo
+):
+    factory = FakeFactory()
+    now_fn, advance = _drive_clock(datetime(2026, 5, 18, 12, 0, 0))
+    manager = _make_manager_mutable_clock(
+        tmp_path, cameras_repo, segments_repo, factory, now_fn
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    process = factory.processes[0]
+
+    seg_dir = tmp_path / "Front" / "2026-05-18"
+    segment = seg_dir / "2026-05-18_12-00-00.mp4"
+    segment.write_bytes(b"x" * 1024)
+    manager.poll()  # observe 1024
+
+    advance(31)
+    segment.write_bytes(b"x" * 4096)  # grew between polls
+    manager.poll()
+
+    # Grew, so last_growth_at resets; no kill.
+    assert not process.killed
+
+
+def test_watchdog_does_not_kill_when_no_segment_file_exists_yet(
+    tmp_path, cameras_repo, segments_repo
+):
+    factory = FakeFactory()
+    now_fn, advance = _drive_clock(datetime(2026, 5, 18, 12, 0, 0))
+    manager = _make_manager_mutable_clock(
+        tmp_path, cameras_repo, segments_repo, factory, now_fn
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    process = factory.processes[0]
+
+    # No .mp4 in the seg dir -- ffmpeg is still establishing RTSP. The
+    # watchdog should NOT penalize this cold-start phase even if minutes pass.
+    manager.poll()
+    advance(120)
+    manager.poll()
+    assert not process.killed
+
+
+def test_watchdog_only_runs_against_live_processes_not_crashed_ones(
+    tmp_path, cameras_repo, segments_repo
+):
+    # Crashed ffmpeg goes through the existing restart-after-backoff path,
+    # not the stall watchdog. Make sure we don't double-kill.
+    factory = FakeFactory()
+    now_fn, advance = _drive_clock(datetime(2026, 5, 18, 12, 0, 0))
+    manager = _make_manager_mutable_clock(
+        tmp_path, cameras_repo, segments_repo, factory, now_fn
+    )
+    camera = _add(cameras_repo)
+    manager.start(camera)
+    process = factory.processes[0]
+
+    seg_dir = tmp_path / "Front" / "2026-05-18"
+    segment = seg_dir / "2026-05-18_12-00-00.mp4"
+    segment.write_bytes(b"x" * 1024)
+
+    # First, record an observation while alive.
+    manager.poll()
+
+    # Now ffmpeg crashes; even with size unchanged for ages, the watchdog
+    # branch in poll() shouldn't fire (we only enter it when returncode is None).
+    process.simulate_exit(1)
+    advance(60)
+    manager.poll()
+    # The crash branch sets next_restart_after but does NOT call kill().
+    assert not process.killed
