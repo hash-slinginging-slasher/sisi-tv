@@ -45,6 +45,7 @@ def _build_lifespan(
     segments: SegmentRepository | None,
     retention_interval_seconds: float | None,
     config: AppConfig | None = None,
+    live_stream_manager=None,
 ):
     retention_enabled = (
         cameras is not None
@@ -71,6 +72,11 @@ def _build_lifespan(
                     recording_manager.poll()
                 except Exception:  # noqa: BLE001 — poller must survive transient errors
                     logger.exception("recording poll tick failed")
+                if live_stream_manager is not None:
+                    try:
+                        live_stream_manager.poll()
+                    except Exception:  # noqa: BLE001
+                        logger.exception("hls poll tick failed")
                 try:
                     await asyncio.wait_for(stop.wait(), timeout=poll_interval_seconds)
                 except asyncio.TimeoutError:
@@ -126,6 +132,11 @@ def _build_lifespan(
                 recording_manager.stop_all()
             except Exception:  # noqa: BLE001
                 logger.exception("recording stop_all failed")
+            if live_stream_manager is not None:
+                try:
+                    live_stream_manager.shutdown_all()
+                except Exception:  # noqa: BLE001
+                    logger.exception("hls shutdown_all failed")
 
     return lifespan
 
@@ -139,6 +150,7 @@ def build_app(
     lifespan_poll_seconds: float | None = None,
     retention_interval_seconds: float | None = None,
     config: AppConfig | None = None,
+    live_stream_manager=None,
 ) -> FastAPI:
     lifespan = (
         _build_lifespan(
@@ -148,6 +160,7 @@ def build_app(
             segments,
             retention_interval_seconds,
             config,
+            live_stream_manager=live_stream_manager,
         )
         if recording_manager is not None and lifespan_poll_seconds is not None
         else None
@@ -160,6 +173,7 @@ def build_app(
     app.state.ptz_service = PTZService()
     app.state.resolve_streams = _default_resolve_streams
     app.state.config = config if config is not None else AppConfig()
+    app.state.live_stream_manager = live_stream_manager
     app.state.templates = Jinja2Templates(directory=str(_TEMPLATE_DIR))
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 

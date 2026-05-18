@@ -71,9 +71,10 @@
             {% for cam in feed_cameras %}
             <a href="/cameras/{{ cam.id }}" class="group relative aspect-video bg-black rounded-xl border border-outline-variant overflow-hidden hover:border-primary transition-all duration-300 block"
                style="--feed-seed: {{ feed_seeds[cam.id] }};">
-                <img src="/cameras/{{ cam.id }}/live.mjpg" alt="{{ cam.name }} live view"
-                     class="w-full h-full object-cover"
-                     {% if cam.display_rotation %}style="transform: rotate({{ cam.display_rotation }}deg);"{% endif %}>
+                <video data-hls-src="/cameras/{{ cam.id }}/live/index.m3u8"
+                       autoplay muted playsinline
+                       class="w-full h-full object-cover"
+                       {% if cam.display_rotation %}style="transform: rotate({{ cam.display_rotation }}deg);"{% endif %}></video>
                 <div class="scanline"></div>
                 <div class="absolute top-3 left-3 flex gap-2">
                     <span class="px-2 py-0.5 bg-error text-[10px] font-bold text-on-error rounded live-pulse">LIVE</span>

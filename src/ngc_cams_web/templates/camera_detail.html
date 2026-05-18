@@ -22,9 +22,10 @@
         {% set variant = 'variant-degraded' if (camera.id % 3 == 0) else 'variant-stable' %}
         <div class="relative aspect-video bg-black rounded-lg overflow-hidden border border-outline-variant filter-container {% if feed_filter != 'normal' %}{{ feed_filter }}-filter {{ variant }}{% endif %}"
              style="--feed-seed: {{ feed_seed }};">
-            <img src="/cameras/{{ camera.id }}/live.mjpg" alt="live view"
-                 class="w-full h-full object-cover"
-                 {% if camera.display_rotation %}style="transform: rotate({{ camera.display_rotation }}deg);"{% endif %}>
+            <video data-hls-src="/cameras/{{ camera.id }}/live/index.m3u8"
+                   autoplay muted playsinline
+                   class="w-full h-full object-cover"
+                   {% if camera.display_rotation %}style="transform: rotate({{ camera.display_rotation }}deg);"{% endif %}></video>
             {% include "_feed_filter_overlays.html" %}
             <div class="scanline"></div>
         </div>

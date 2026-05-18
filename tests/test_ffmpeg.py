@@ -85,20 +85,19 @@ def test_segment_command_uses_custom_ffmpeg_path():
     assert command[0] == r"C:\tools\ffmpeg\bin\ffmpeg.exe"
 
 
-def test_segment_command_sets_rtsp_and_read_timeouts():
-    # Without -stimeout and -rw_timeout, ffmpeg hangs indefinitely when the
-    # camera/NAS stalls and the segment file stops growing -- which is what
-    # the user reported as "recordings are stuck".
+def test_segment_command_sets_rtsp_socket_timeout():
+    # Without a socket timeout ffmpeg hangs indefinitely when the camera/NAS
+    # stalls and the segment file stops growing. ffmpeg 8 renamed -stimeout
+    # to -timeout for RTSP, and -rw_timeout was HTTP-only -- not valid here.
     command = build_segment_command(
         "rtsp://camera/main",
         Path("out.mp4"),
         RecordMode.VIDEO_ONLY,
     )
-    assert "-stimeout" in command
-    assert command[command.index("-stimeout") + 1] == "5000000"
-    assert "-rw_timeout" in command
-    assert command[command.index("-rw_timeout") + 1] == "10000000"
-    # Both must come BEFORE the input URL so ffmpeg applies them to the input.
-    i = command.index("-i")
-    assert command.index("-stimeout") < i
-    assert command.index("-rw_timeout") < i
+    assert "-timeout" in command
+    assert command[command.index("-timeout") + 1] == "10000000"
+    # Must come BEFORE the input URL so ffmpeg applies it to the input.
+    assert command.index("-timeout") < command.index("-i")
+    # The removed flags should NOT appear -- ffmpeg 8 rejects them.
+    assert "-stimeout" not in command
+    assert "-rw_timeout" not in command

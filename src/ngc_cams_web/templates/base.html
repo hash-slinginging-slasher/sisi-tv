@@ -12,6 +12,7 @@
          which look near-identical and saves ~150KB. -->
     <script src="/static/tailwind.js"></script>
     <script src="/static/htmx.min.js" defer></script>
+    <script src="/static/hls.min.js" defer></script>
     <link href="/static/fonts/material-symbols.css" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -360,5 +361,47 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+    <script>
+        // HLS live-view bootstrap. Every <video data-hls-src="..."> element on
+        // the page gets an Hls instance pointed at its m3u8 URL. One ffmpeg
+        // per camera is shared across all viewers; see ngc_cams_web/hls.py.
+        //
+        // Edge/Chrome require hls.js (no native HLS). Safari/iOS have native
+        // HLS so we skip hls.js there and let <video> handle it directly.
+        function sisiInitHls() {
+            const videos = document.querySelectorAll('video[data-hls-src]');
+            videos.forEach(function(video) {
+                const src = video.getAttribute('data-hls-src');
+                if (!src) return;
+                if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = src;
+                    return;
+                }
+                if (!window.Hls || !window.Hls.isSupported()) {
+                    // Fallback: hide the broken video so we don't leave a black box.
+                    // The MJPEG endpoint stays as an emergency fallback.
+                    video.style.display = 'none';
+                    return;
+                }
+                const hls = new window.Hls({
+                    liveSyncDuration: 2,
+                    liveMaxLatencyDuration: 6,
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                    // The playlist 503s while ffmpeg is starting up. Keep
+                    // retrying until it appears (camera startup can take 2-5s).
+                    manifestLoadingMaxRetry: 30,
+                    manifestLoadingRetryDelay: 500,
+                });
+                hls.loadSource(src);
+                hls.attachMedia(video);
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', sisiInitHls);
+        } else {
+            sisiInitHls();
+        }
+    </script>
 </body>
 </html>

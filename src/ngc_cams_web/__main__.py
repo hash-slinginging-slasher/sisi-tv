@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import socket
 import sys
+import tempfile
 import threading
 import time
 import webbrowser
+from pathlib import Path
 
 import uvicorn
 
@@ -15,6 +17,7 @@ from ngc_cams.onvif.discovery import DiscoveryService
 from ngc_cams.recording.manager import RecordingManager
 from ngc_cams.segments import SegmentRepository
 from ngc_cams_web.composition import build_app
+from ngc_cams_web.hls import LiveStreamManager
 
 
 def _lan_hostname() -> str:
@@ -39,6 +42,11 @@ def main() -> int:
         segment_seconds=config.segment_seconds,
         disk_guard_free_gb=config.disk_guard_free_gb,
     )
+    # HLS live streaming uses LOCAL temp disk, not the NAS recording root --
+    # 2-second segment rotation over SMB would constantly stall.
+    hls_root = Path(tempfile.gettempdir()) / "sisi-tv-hls"
+    hls_root.mkdir(parents=True, exist_ok=True)
+    live_streams = LiveStreamManager(hls_root=hls_root)
 
     app = build_app(
         cameras=cameras,
@@ -48,6 +56,7 @@ def main() -> int:
         lifespan_poll_seconds=1.0,
         retention_interval_seconds=300.0,
         config=config,
+        live_stream_manager=live_streams,
     )
 
     host = config.bind_host

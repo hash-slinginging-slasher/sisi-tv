@@ -55,6 +55,12 @@ def vendor_htmx() -> None:
     write(STATIC_DIR / "htmx.min.js", js)
 
 
+def vendor_hls() -> None:
+    print("hls.js (HLS live-view player) ...")
+    js = fetch("https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js")
+    write(STATIC_DIR / "hls.min.js", js)
+
+
 def vendor_material_symbols() -> None:
     print("Material Symbols Outlined (variable font) ...")
     css_url = (
@@ -99,6 +105,8 @@ def main() -> int:
     vendor_tailwind()
     print()
     vendor_htmx()
+    print()
+    vendor_hls()
     print()
     vendor_material_symbols()
     print("\nDone. Update base.html to point at /static/... local paths.")

@@ -51,10 +51,11 @@ def build_segment_command(
         # logic respawns it. The stall-watchdog (RecordingManager._check_stall)
         # is the second line of defense for cases where ffmpeg is still
         # producing data but the output is stuck.
-        "-stimeout",
-        "5000000",   # 5s for RTSP setup / TCP socket
-        "-rw_timeout",
-        "10000000",  # 10s read/write timeout once streaming
+        # ffmpeg 8 renamed -stimeout -> -timeout for RTSP; -rw_timeout is only
+        # valid on HTTP-style protocols and ffmpeg 8 rejects it outright on an
+        # RTSP input. One -timeout covers both connect and read for RTSP.
+        "-timeout",
+        "10000000",  # 10s socket timeout (microseconds)
         "-i",
         rtsp_url,
         "-c",
